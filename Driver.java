@@ -1,4 +1,4 @@
-package ProjectPart1;
+package CIS331TeamNAME;
 
 import java.util.Scanner;
 
