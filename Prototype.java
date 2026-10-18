@@ -3,13 +3,26 @@ package CIS331TeamNAME;
 import java.util.Scanner;
 
 /**
- * * @authors Dorian Crawford, Laura Elmore, Daniel Haddadin, Mason Noufal, Tyler Ryu, Qiuxuan Xiong, Yuyao Yang
+ * @authors Dorian Crawford, Laura Elmore, Daniel Haddadin, Mason Noufal, Tyler Ryu, Qiuxuan Xiong, Yuyao Yang
  * @date 10/16/2026
  * @purpose This is a console-based prototype of an auctioneering system
  * @disclaimer
  */
 public class Prototype {
     public static Scanner userInput = new Scanner(System.in);
+    public static int intent = -1;
+    
+    // We should really be using objects for items & auctions but we're restricted so we're doing arrays
+    
+    // Arrays are arbitrarily set to 256 items because we're not allowed to use ArrayLists
+    // Also we could make Object[] arrays but that feels too advanced for the technical restriction we have so we're making it all String and typecasting
+    
+    // items structure: [item id, item name, item decr]
+    public static String[][] items = new String[256][3];
+    public static int nextItemSlot = 0;
+    // auctions structure: [auction id, item id, item name, item description, current bid, date opnened, closing date, open (should be bool)]
+    public static String[][] auctions = new String[256][8];
+    
 
     public static void main(String[] args) {
         /*
@@ -19,11 +32,6 @@ public class Prototype {
         * Data is automatically saved and program ends.
         */
         loadData();
-        mainMenu();
-        saveData();
-    }
-    
-    public static void mainMenu() {
         int userType = login();
         switch (userType) {
             case 1 -> sellerMenu();
@@ -33,8 +41,9 @@ public class Prototype {
                 return;
             }
         }
+        saveData();
     }
-    
+
     public static void sellerMenu() {
         /*
         * Actions available to the Seller:
@@ -42,7 +51,9 @@ public class Prototype {
         * Edit existing item
         * Create auction sale with 1+ items
         */
-        int intent = -1;
+        intent = -1;
+        
+        // this whole workflow is in a while loop so the seller can keep doing seller things
         while (intent > 0 || intent == -1) {
             System.out.println("Welcome, Seller! What do you want to do? Input 1 to create an item, 2 to edit an existing item, 3 to create an auction. Enter 0 to exit: ");
             while (!userInput.hasNextInt() && (intent < 0 || intent > 3)) { // ensures only ints are entered
@@ -53,8 +64,19 @@ public class Prototype {
 
             switch (intent) {
                 case 1 -> { // create an item
+                    addItem(nextItemSlot);
                 }
                 case 2 -> { // editing existing item
+                    // display existing items
+                    displayItems();
+
+                    System.out.println("What item do you want to edit? Input id: ");
+                    while (!userInput.hasNextInt()) { // ensures proper ID is entered
+                        userInput.next();
+                        System.out.println("\nInvalid input! Input ID of the item you want to edit: ");
+                    }
+                    int selectedIndex = userInput.nextInt();
+                    addItem(selectedIndex);
                 }
                 case 3 -> { // create an auction
                 }
@@ -71,7 +93,9 @@ public class Prototype {
         * Browse items
         * Place bid on item
         */
-        int intent = -1;
+        intent = -1;
+        
+        // this whole workflow is in a while loop so the buyer can keep doing buyer things
         while (intent > 0 || intent == -1) {
             System.out.println("Welcome, Buyer! What do you want to do? Input 1 to browse items, 2 to place a bid on an item. Enter 0 to exit: ");
             while (!userInput.hasNextInt() && (intent < 0 || intent > 2)) { // ensures only ints are entered
@@ -82,8 +106,34 @@ public class Prototype {
 
             switch (intent) {
                 case 1 -> { // browse items
+                    displayItems();
                 }
                 case 2 -> { // place bid on item
+                    System.out.println("Here are all the open items:");
+                    int i = 0;
+                    while (!items[i][0].equals("") && items[i][7].equals("true")) {
+                        System.out.printf("AUCTION # %s:]n", auctions[i][0]);
+                        System.out.printf("--ITEM: %s\n", auctions[i][2]);
+                        System.out.printf("--DESCRIPTION: %s\n", auctions[i][3]);
+                        System.out.printf("--CLOSING DATE: %s\n", auctions[i][6]);
+                        System.out.printf("--CURRENT BID: %s\n", auctions[i][4]);
+                        System.out.println();                        
+                        i++;
+                    }
+                    
+                    System.out.println("Which item do you want to bid on? Input id: ");
+                    while (!userInput.hasNextInt()) { // ensures proper ID is entered
+                        userInput.next();
+                        System.out.println("\nInvalid input! Input ID of the item you want to bid on: ");
+                    }
+                    int selectedIndex = userInput.nextInt();
+                    
+                    System.out.println("What is your bid? ");
+                    while (!userInput.hasNextDouble()) { // ensures proper ID is entered
+                        userInput.next();
+                        System.out.println("\nInvalid input! Input ID of the item you want to bid on: ");
+                    }
+                    
                 }
                 case 0 -> { // exit
                     return;
@@ -98,7 +148,9 @@ public class Prototype {
         * Edit existing items
         * Run reports
         */
-        int intent = -1;
+        intent = -1;
+        
+        // this whole workflow is in a while loop so the admin can keep doing admin things
         while (intent > 0 || intent == -1) {
             System.out.println("Welcome, Admin! What do you want to do? Input 1 to close a sale early, 2 to edit an existing item, 3 to run reports. Enter 0 to exit: ");
             while (!userInput.hasNextInt() && (intent < 0 || intent > 3)) { // ensures only ints are entered
@@ -111,6 +163,16 @@ public class Prototype {
                 case 1 -> { // close a sale early
                 }
                 case 2 -> { // edit an existing item
+                    // display existing items
+                    displayItems();
+
+                    System.out.println("What item do you want to edit? Input id: ");
+                    while (!userInput.hasNextInt()) { // ensures proper ID is entered
+                        userInput.next();
+                        System.out.println("\nInvalid input! Input ID of the item you want to edit: ");
+                    }
+                    int selectedIndex = userInput.nextInt();
+                    addItem(selectedIndex);
                 }
                 case 3 -> { // run reports
                 }
@@ -134,7 +196,14 @@ public class Prototype {
     
     //TODO
     public static void loadData() {
-        return;
+        items[0] = new String[] {"0", "title", "description"};
+        items[1] = new String[] {"1", "lorem", "dolor sit amet"};
+        items[2] = new String[] {"2", "Sisyphus's Boulder", "it imagines him happy"};
+        items[3] = new String[] {"3", "Where The Sidewalk Ends", "by Shel Silverstein"};
+
+        auctions[0] = new String[] {"0", items[1][0], items[1][1], items[1][2], "19.99", "12-12-2012", "05-02-2013", "false"};
+        auctions[0] = new String[] {"1", items[2][0], items[2][1], items[2][2], "200.00", "05-27-2025", "05-28-2025", "true"};
+        auctions[0] = new String[] {"2", items[3][0], items[3][0], items[3][2], "500", "11-12-1989", "09-09-2009", "true"};
     }
     
     //TODO
@@ -148,6 +217,31 @@ public class Prototype {
         * Report showing all items for sale with a price filter
         * Charting report that produces a histogram of price ranges. Length of bars is proportional to overall total of items
         */
+    }
+    
+    public static void addItem(int itemIndex) {
+        // if we're using the next blank element in the items array, advance by one
+        if (itemIndex == nextItemSlot) {
+            nextItemSlot++;
+        }
+        
+        System.out.println("What is the name of your item? ");
+        String itemName = userInput.nextLine();
+        
+        System.out.println("What is the description of your item? ");
+        String itemDescr = userInput.nextLine();
+        
+        items[itemIndex] = new String[] {String.valueOf(itemIndex), itemName, itemDescr};
+    }
+    
+    public static void displayItems() {
+        System.out.println("Here are all the items:");
+        int i = 0;
+        while (!items[i][0].equals("")) {
+            System.out.printf("ITEM ID %s, %s: %s\n", items[i][0], items[i][1], items[i][2]);
+            System.out.println();
+            i++;
+        }
     }
 
 }
