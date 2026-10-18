@@ -116,7 +116,7 @@ public class Prototype {
                         System.out.printf("--ITEM: %s\n", auctions[i][2]);
                         System.out.printf("--DESCRIPTION: %s\n", auctions[i][3]);
                         System.out.printf("--CLOSING DATE: %s\n", auctions[i][6]);
-                        System.out.printf("--CURRENT BID: %s\n", auctions[i][4]);
+                        System.out.printf("--CURRENT HIGHEST BID: %s\n", auctions[i][4]);
                         System.out.println();                        
                         i++;
                     }
@@ -131,7 +131,12 @@ public class Prototype {
                     System.out.println("What is your bid? ");
                     while (!userInput.hasNextDouble()) { // ensures proper ID is entered
                         userInput.next();
-                        System.out.println("\nInvalid input! Input ID of the item you want to bid on: ");
+                        System.out.println("\nInvalid input! Input a numerical value: ");
+                    }
+                    double userBid = userInput.nextDouble();
+                    System.out.println("Bid placed!");
+                    if (userBid > Double.parseDouble(auctions[selectedIndex][4])) {
+                        auctions[selectedIndex][4] = String.valueOf(userBid);
                     }
                     
                 }
