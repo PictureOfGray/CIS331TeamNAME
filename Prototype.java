@@ -1,9 +1,7 @@
 package CIS331TeamNAME;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
-import java.util.Scanner;
+import java.util.*; // to use Scanner
+import java.io.*;   // for Java File I/O
 
 /**
  * @authors Dorian Crawford, Laura Elmore, Daniel Haddadin, Mason Noufal, Tyler Ryu, Qiuxuan Xiong, Yuyao Yang
@@ -23,8 +21,8 @@ public class Prototype {
     // items structure: [item id, item name, item decr]
     public static String[][] items = new String[256][3];
     public static int nextItemSlot = 0;
-    // auctions structure: [auction id, item id, item name, item description, current bid, date opnened, closing date, open (should be bool)]
-    public static String[][] auctions = new String[256][8];
+    // auctions structure: [auction id, item id, current bid, date opnened, closing date, open (should be bool)]
+    public static String[][] auctions = new String[256][6];
     public static int nextAuctionSlot = 0;
     
 // Files are read from the programs working directory
@@ -168,8 +166,6 @@ public static final String DELIMITER = "|";
                     auctions[nextAuctionSlot] = new String[] {
                         String.valueOf(nextAuctionSlot), // auction id
                         items[selectedItem][0],          // item id
-                        items[selectedItem][1],          // item name
-                        items[selectedItem][2],          // item description
                         String.valueOf(openingBid),
                         openingDate,
                         closingDate,
@@ -210,12 +206,12 @@ public static final String DELIMITER = "|";
                 case 2 -> { // place bid on item
                     System.out.println("Here are all the open auctions:");
                     for (int i = 0; i < auctions.length && auctions[i] != null; i++) {
-                        if (auctions[i][7].equals("true")) {
+                        if (auctions[i][5].equals("true")) {
                             System.out.printf("AUCTION # %s:\n", auctions[i][0]);
-                            System.out.printf("--ITEM: %s\n", auctions[i][2]);
-                            System.out.printf("--DESCRIPTION: %s\n", auctions[i][3]);
+                            System.out.printf("--ITEM: %s\n", items[Integer.parseInt(auctions[i][1])][1]);
+                            System.out.printf("--DESCRIPTION: %s\n", items[Integer.parseInt(auctions[i][1])][2]);
                             System.out.printf("--CLOSING DATE: %s\n", auctions[i][6]);
-                            System.out.printf("--CURRENT HIGHEST BID: %s\n", auctions[i][4]);
+                            System.out.printf("--CURRENT HIGHEST BID: %s\n", auctions[i][5]);
                             System.out.println();
                         }   
                     }
@@ -232,7 +228,7 @@ public static final String DELIMITER = "|";
                             if (selectedIndex >= 0 &&
                                 selectedIndex < nextAuctionSlot &&
                                 auctions[selectedIndex] != null &&
-                                auctions[selectedIndex][7].equals("true")) {
+                                auctions[selectedIndex][5].equals("true")) {
                                 break;
                             }
                         } else {
@@ -251,8 +247,8 @@ public static final String DELIMITER = "|";
                             userBid = userInput.nextDouble();
 
                             if (userBid > 0) {
-                                if (userBid > Double.parseDouble(auctions[selectedIndex][4])) {
-                                    auctions[selectedIndex][4] = String.valueOf(userBid);
+                                if (userBid > Double.parseDouble(auctions[selectedIndex][5])) {
+                                    auctions[selectedIndex][5] = String.valueOf(userBid);
                                     break;
                                 } else {
                                     System.out.println("Please place a higher bid: ");
@@ -292,10 +288,10 @@ public static final String DELIMITER = "|";
                     System.out.println("Open Auctions: ");
                     for (int i = 0; i < nextAuctionSlot; i++) {
                         if (auctions[i] != null &&
-                            auctions[i][7].equals("true")) {
+                            auctions[i][5].equals("true")) {
 
                             System.out.printf(
-                                "Auction #%s: %s (Current Bid: %s)\n", auctions[i][0], auctions[i][2], auctions[i][4]
+                                "Auction #%s: %s (Current Bid: %s)\n", auctions[i][0], items[Integer.parseInt(auctions[i][1])][1] , auctions[i][2]
                             );
                         }
                     }
@@ -310,7 +306,7 @@ public static final String DELIMITER = "|";
                             if (selectedAuction >= 0 &&
                                 selectedAuction < nextAuctionSlot &&
                                 auctions[selectedAuction] != null &&
-                                auctions[selectedAuction][7].equals("true")) {
+                                auctions[selectedAuction][5].equals("true")) {
                                 break;
                             }
                         } else {
@@ -320,7 +316,7 @@ public static final String DELIMITER = "|";
                         System.out.println("Invalid auction ID!");
                     }
 
-                    auctions[selectedAuction][7] = "false";
+                    auctions[selectedAuction][5] = "false";
 
                     System.out.printf("Auction #%d has been closed!\n", selectedAuction);
                 }
@@ -352,169 +348,59 @@ public static final String DELIMITER = "|";
         return getValidatedInt(0, 3, "Invalid input! Input 0 to exit, 1 for Seller, 2 for Buyer, or 3 for Admin: ");
     }
     
-    // AI Assisted (Claude): loadData() and saveData() written with AI help.
-    // Team: 
-    //
-    // File format: one record per line, fields separated by "|", in the same order as the arrays.
-    //   items.txt:    id|name|description
-    //   auctions.txt: auctionId|itemId|itemName|itemDescription|currentBid|openDate|closeDate|open
-    //
-    // ID scheme: the rest of the program assumes a record's ID equals its array index, so each loaded
-    // record is stored at the index matching its ID. The next free slot (and next new ID) is then
-    // the highest loaded ID + 1, so new records never reuse an existing ID.
     public static void loadData() {
-        // ---------- Load items ----------
+        // Read the items.csv file and put it in a global array
         try {
-            Scanner fileIn = new Scanner(new File(ITEMS_FILE));
-            int lineNumber = 0;
-
-            while (fileIn.hasNextLine()) {
-                String line = fileIn.nextLine();
-                lineNumber++;
-
-                if (line.trim().isEmpty()) { // skip blank lines
-                    continue;
+            Scanner itemsReader = new Scanner(new File("/items.csv"));
+            itemsReader.next(); // eat the first line of the csv, since we don't need it
+            while(itemsReader.hasNext()) {
+                String row = itemsReader.nextLine();
+                String[] itemInfo = row.split(","); // split the CSV line into its parts
+                int itemIndex = Integer.parseInt(itemInfo[0]); // yeah the index is based off the id and that's bad but w/e
+                if (itemIndex >= items.length) {
+                    System.out.println("Max number of items loaded!");
+                    break;
                 }
-
-                // split on "|" (it has to be escaped as "\\|" because split() takes a regex)
-                // the -1 keeps empty fields, e.g. an item with a blank description
-                String[] fields = line.split("\\|", -1);
-
-                if (fields.length != 3) {
-                    System.out.printf("Skipping bad line %d in %s (expected 3 fields)\n", lineNumber, ITEMS_FILE);
-                    continue;
-                }
-
-                try {
-                    int id = Integer.parseInt(fields[0].trim());
-
-                    if (id < 0 || id >= items.length) {
-                        System.out.printf("Skipping line %d in %s (ID out of range)\n", lineNumber, ITEMS_FILE);
-                        continue;
-                    }
-
-                    items[id] = new String[] {String.valueOf(id), fields[1], fields[2]};
-
-                    if (id >= nextItemSlot) { // next ID = highest ID so far + 1
-                        nextItemSlot = id + 1;
-                    }
-                } catch (NumberFormatException e) {
-                    System.out.printf("Skipping line %d in %s (ID is not a number)\n", lineNumber, ITEMS_FILE);
-                }
+                items[itemIndex][0] = itemInfo[0]; // item ID
+                items[itemIndex][1] = itemInfo[1]; // item name
+                items[itemIndex][2] = itemInfo[2]; // item description
             }
-
-            fileIn.close();
-            System.out.printf("Loaded items from %s.\n", ITEMS_FILE);
-        } catch (FileNotFoundException e) {
-            // first run, or the file was deleted: just start with no items
-            System.out.printf("%s not found. Starting with no items.\n", ITEMS_FILE);
+        } catch (FileNotFoundException ex) {
+            System.getLogger(Prototype.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
         }
-
-        // ---------- Load auctions ----------
-        try {
-            Scanner fileIn = new Scanner(new File(AUCTIONS_FILE));
-            int lineNumber = 0;
-
-            while (fileIn.hasNextLine()) {
-                String line = fileIn.nextLine();
-                lineNumber++;
-
-                if (line.trim().isEmpty()) {
-                    continue;
-                }
-
-                String[] fields = line.split("\\|", -1);
-
-                if (fields.length != 8) {
-                    System.out.printf("Skipping bad line %d in %s (expected 8 fields)\n", lineNumber, AUCTIONS_FILE);
-                    continue;
-                }
-
+        
+        // Read the auctions.cs file and put it in a global array.
                 try {
-                    int id = Integer.parseInt(fields[0].trim());
-                    Double.parseDouble(fields[4].trim()); // make sure the bid is a number now, so reports don't crash later
-
-                    if (id < 0 || id >= auctions.length) {
-                        System.out.printf("Skipping line %d in %s (ID out of range)\n", lineNumber, AUCTIONS_FILE);
-                        continue;
-                    }
-
-                    // anything other than "true" counts as closed
-                    String open = fields[7].trim().equalsIgnoreCase("true") ? "true" : "false";
-
-                    auctions[id] = new String[] {
-                        String.valueOf(id), fields[1].trim(), fields[2], fields[3],
-                        fields[4].trim(), fields[5].trim(), fields[6].trim(), open
-                    };
-
-                    if (id >= nextAuctionSlot) {
-                        nextAuctionSlot = id + 1;
-                    }
-                } catch (NumberFormatException e) {
-                    System.out.printf("Skipping line %d in %s (ID or bid is not a number)\n", lineNumber, AUCTIONS_FILE);
+            Scanner auctionReader = new Scanner(new File("/auctions.csv"));
+            auctionReader.next(); // eat the first line of the csv, since we don't need it
+            while(auctionReader.hasNext()) {
+                String row = auctionReader.nextLine();
+                String[] auctionInfo = row.split(","); // split the CSV line into its parts
+                int auctionIndex = Integer.parseInt(auctionInfo[0]); // yeah the index is based off the id and that's bad but w/e
+                if (auctionIndex >= items.length) {
+                    System.out.println("Max number of auctions loaded!");
+                    break;
                 }
+                items[auctionIndex][0] = auctionInfo[0]; // auction ID
+                items[auctionIndex][1] = auctionInfo[1]; // item ID
+                items[auctionIndex][2] = auctionInfo[2]; // current bid
+                items[auctionIndex][3] = auctionInfo[2]; // date opened
+                items[auctionIndex][4] = auctionInfo[2]; // closing date
+                items[auctionIndex][5] = auctionInfo[2]; // open (true/false)
             }
-
-            fileIn.close();
-            System.out.printf("Loaded auctions from %s.\n", AUCTIONS_FILE);
-        } catch (FileNotFoundException e) {
-            System.out.printf("%s not found. Starting with no auctions.\n", AUCTIONS_FILE);
+        } catch (FileNotFoundException ex) {
+            System.getLogger(Prototype.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
         }
-
-        System.out.printf("%d item slot(s) and %d auction slot(s) in use.\n\n", nextItemSlot, nextAuctionSlot);
+        
+        
+        System.out.println("All data loaded!");
     }
     
     // Overwrites both data files with everything currently in memory
     public static void saveData() {
-        // ---------- Save items ----------
-        try {
-            PrintWriter fileOut = new PrintWriter(ITEMS_FILE);
-
-            for (int i = 0; i < nextItemSlot; i++) {
-                if (items[i][0] != null) { // skip any empty slots
-                    fileOut.println(toLine(items[i]));
-                }
-            }
-
-            fileOut.close(); // close() is what actually writes everything to disk
-        } catch (FileNotFoundException e) {
-            System.out.printf("Could not save %s: %s\n", ITEMS_FILE, e.getMessage());
-        }
-
-        // ---------- Save auctions ----------
-        try {
-            PrintWriter fileOut = new PrintWriter(AUCTIONS_FILE);
-
-            for (int i = 0; i < nextAuctionSlot; i++) {
-                if (auctions[i][0] != null) {
-                    fileOut.println(toLine(auctions[i]));
-                }
-            }
-
-            fileOut.close();
-        } catch (FileNotFoundException e) {
-            System.out.printf("Could not save %s: %s\n", AUCTIONS_FILE, e.getMessage());
-        }
-
         System.out.println("Data saved. Goodbye!");
     }
 
-    // Joins one record's fields into a single "|"-separated line.
-    // If a user typed "|" into a name or description, it's swapped for "/" so the line still splits correctly when loaded.
-    public static String toLine(String[] record) {
-        String line = "";
-
-        for (int i = 0; i < record.length; i++) {
-            String field = (record[i] == null) ? "" : record[i].replace(DELIMITER, "/");
-            line += field;
-
-            if (i < record.length - 1) {
-                line += DELIMITER;
-            }
-        }
-
-        return line;
-    }
     
     public static void generateReport() {
         System.out.println("Which report would you like to run?");
@@ -532,12 +418,13 @@ public static final String DELIMITER = "|";
                 System.out.println("\nLIVE AUCTIONS REPORT");
                 for (int i = 0; i < nextAuctionSlot; i++) {
 
-                    if (auctions[i] != null && auctions[i][7].equals("true")) {
-                        System.out.printf("\nAUCTION #%s\n", auctions[i][0]);
-                        System.out.printf("Item: %s\n", auctions[i][2]);
-                        System.out.printf("Description: %s\n", auctions[i][3]);
-                        System.out.printf("Current Bid: $%s\n", auctions[i][4]);
-                        System.out.printf("Closing Date: %s\n", auctions[i][6]);
+                    if (auctions[i] != null && auctions[i][5].equals("true")) {
+                        System.out.printf("AUCTION # %s:\n", auctions[i][0]);
+                        System.out.printf("--Item: %s\n", items[Integer.parseInt(auctions[i][1])][1]);
+                        System.out.printf("--Description: %s\n", items[Integer.parseInt(auctions[i][1])][2]);
+                        System.out.printf("--Closing Date: %s\n", auctions[i][6]);
+                        System.out.printf("--Current Highest Bid: %s\n", auctions[i][5]);
+                        System.out.println();
                     }
                 }
                 System.out.println();
@@ -563,14 +450,14 @@ public static final String DELIMITER = "|";
                 System.out.printf("\nITEMS FOR SALE ($%.2f AND UP)\n", minimumPrice);
 
                 for (int i = 0; i < nextAuctionSlot; i++) {
-                    if (auctions[i] != null && auctions[i][7].equals("true")) {
+                    if (auctions[i] != null && auctions[i][5].equals("true")) {
 
-                        double price = Double.parseDouble(auctions[i][4]);
+                        double price = Double.parseDouble(auctions[i][2]);
 
                         if (price >= minimumPrice) {
                             System.out.printf( "Auction #%s | %s | Current Bid: $%.2f\n",
                                 auctions[i][0],
-                                auctions[i][2],
+                                items[Integer.parseInt(auctions[i][1])][1],
                                 price
                             );
                         }
@@ -585,9 +472,9 @@ public static final String DELIMITER = "|";
 
                 // add auctions' prices to respective bins
                 for (int i = 0; i < nextAuctionSlot; i++) {
-                    if (auctions[i] != null && auctions[i][7].equals("true")) {
+                    if (auctions[i] != null && auctions[i][5].equals("true")) {
 
-                        double price = Double.parseDouble(auctions[i][4]);
+                        double price = Double.parseDouble(auctions[i][2]);
 
                         if (price <= 5) {
                             bins[0]++;
