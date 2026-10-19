@@ -22,6 +22,7 @@ public class Prototype {
     public static int nextItemSlot = 0;
     // auctions structure: [auction id, item id, item name, item description, current bid, date opnened, closing date, open (should be bool)]
     public static String[][] auctions = new String[256][8];
+    public static int nextAuctionSlot = 0;
     
 
     public static void main(String[] args) {
@@ -32,7 +33,7 @@ public class Prototype {
         * Data is automatically saved and program ends.
         */
         loadData();
-        int userType = login();
+            int userType = login();
         switch (userType) {
             case 1 -> sellerMenu();
             case 2 -> buyerMenu();
@@ -56,11 +57,7 @@ public class Prototype {
         // this whole workflow is in a while loop so the seller can keep doing seller things
         while (intent > 0 || intent == -1) {
             System.out.println("Welcome, Seller! What do you want to do? Input 1 to create an item, 2 to edit an existing item, 3 to create an auction. Enter 0 to exit: ");
-            while (!userInput.hasNextInt() && (intent < 0 || intent > 3)) { // ensures only ints are entered
-                userInput.next();
-                System.out.println("\nInvalid input! Input 0 to exit, 1 for Seller, 2 for Buyer, or 3 for Admin: ");
-            }
-            intent = userInput.nextInt();
+            intent = getValidatedInt(0, 3, "Invalid input! Enter 1 to create an item, 2 to edit an existing item, 3 to create an auction, or 0 to exit: ");
 
             switch (intent) {
                 case 1 -> { // create an item
@@ -70,12 +67,24 @@ public class Prototype {
                     // display existing items
                     displayItems();
 
-                    System.out.println("What item do you want to edit? Input id: ");
-                    while (!userInput.hasNextInt()) { // ensures proper ID is entered
-                        userInput.next();
-                        System.out.println("\nInvalid input! Input ID of the item you want to edit: ");
+                    int selectedIndex;
+                    while (true) { // validate user input to make sure it's an int in index range
+                        System.out.println("What item do you want to edit? Input id: ");
+
+                        if (userInput.hasNextInt()) {
+                            selectedIndex = userInput.nextInt();
+
+                            if (selectedIndex >= 0 &&
+                                selectedIndex < nextItemSlot &&
+                                items[selectedIndex] != null) {
+                                break;
+                            }
+                        } else {
+                            userInput.next();
+                        }
+
+                        System.out.println("Invalid item ID!");
                     }
-                    int selectedIndex = userInput.nextInt();
                     addItem(selectedIndex);
                 }
                 case 3 -> { // create an auction
@@ -98,11 +107,7 @@ public class Prototype {
         // this whole workflow is in a while loop so the buyer can keep doing buyer things
         while (intent > 0 || intent == -1) {
             System.out.println("Welcome, Buyer! What do you want to do? Input 1 to browse items, 2 to place a bid on an item. Enter 0 to exit: ");
-            while (!userInput.hasNextInt() && (intent < 0 || intent > 2)) { // ensures only ints are entered
-                userInput.next();
-                System.out.println("\nInvalid input! Input 0 to exit, 1 for Seller, 2 for Buyer, or 3 for Admin: ");
-            }
-            intent = userInput.nextInt();
+            intent = getValidatedInt(0, 2, "Invalid input! Enter 1 to browse items, 2 to place a bid, or 0 to exit: ");
 
             switch (intent) {
                 case 1 -> { // browse items
@@ -110,33 +115,60 @@ public class Prototype {
                 }
                 case 2 -> { // place bid on item
                     System.out.println("Here are all the open items:");
-                    int i = 0;
-                    while (!items[i][0].equals("") && items[i][7].equals("true")) {
-                        System.out.printf("AUCTION # %s:]n", auctions[i][0]);
-                        System.out.printf("--ITEM: %s\n", auctions[i][2]);
-                        System.out.printf("--DESCRIPTION: %s\n", auctions[i][3]);
-                        System.out.printf("--CLOSING DATE: %s\n", auctions[i][6]);
-                        System.out.printf("--CURRENT HIGHEST BID: %s\n", auctions[i][4]);
-                        System.out.println();                        
-                        i++;
+                    for (int i = 0; i < auctions.length && auctions[i] != null; i++) {
+                        if (auctions[i][7].equals("true")) {
+                            System.out.printf("AUCTION # %s:\n", auctions[i][0]);
+                            System.out.printf("--ITEM: %s\n", auctions[i][2]);
+                            System.out.printf("--DESCRIPTION: %s\n", auctions[i][3]);
+                            System.out.printf("--CLOSING DATE: %s\n", auctions[i][6]);
+                            System.out.printf("--CURRENT HIGHEST BID: %s\n", auctions[i][4]);
+                            System.out.println();
+                        }   
                     }
                     
                     System.out.println("Which item do you want to bid on? Input id: ");
-                    while (!userInput.hasNextInt()) { // ensures proper ID is entered
-                        userInput.next();
-                        System.out.println("\nInvalid input! Input ID of the item you want to bid on: ");
+                    int selectedIndex;
+
+                    while (true) { // validate int and proper index is inputted
+                        System.out.println("Which auction do you want to bid on?");
+
+                        if (userInput.hasNextInt()) {
+                            selectedIndex = userInput.nextInt();
+
+                            if (selectedIndex >= 0 &&
+                                selectedIndex < nextAuctionSlot &&
+                                auctions[selectedIndex] != null &&
+                                auctions[selectedIndex][7].equals("true")) {
+                                break;
+                            }
+                        } else {
+                            userInput.next();
+                        }
+
+                        System.out.println("Invalid auction ID! Please input an auction id: ");
                     }
-                    int selectedIndex = userInput.nextInt();
                     
                     System.out.println("What is your bid? ");
-                    while (!userInput.hasNextDouble()) { // ensures proper ID is entered
-                        userInput.next();
-                        System.out.println("\nInvalid input! Input a numerical value: ");
-                    }
-                    double userBid = userInput.nextDouble();
-                    System.out.println("Bid placed!");
-                    if (userBid > Double.parseDouble(auctions[selectedIndex][4])) {
-                        auctions[selectedIndex][4] = String.valueOf(userBid);
+                    double userBid;
+                    while (true) {
+                        
+
+                        if (userInput.hasNextDouble()) {
+                            userBid = userInput.nextDouble();
+
+                            if (userBid > 0) {
+                                if (userBid > Double.parseDouble(auctions[selectedIndex][4])) {
+                                    auctions[selectedIndex][4] = String.valueOf(userBid);
+                                    break;
+                                } else {
+                                    System.out.println("Please place a higher bid: ");
+                                }
+                            }
+                        } else {
+                            userInput.next();
+                        }
+
+                        System.out.println("Bid must be greater than 0! Please input again: ");
                     }
                     
                 }
@@ -158,11 +190,7 @@ public class Prototype {
         // this whole workflow is in a while loop so the admin can keep doing admin things
         while (intent > 0 || intent == -1) {
             System.out.println("Welcome, Admin! What do you want to do? Input 1 to close a sale early, 2 to edit an existing item, 3 to run reports. Enter 0 to exit: ");
-            while (!userInput.hasNextInt() && (intent < 0 || intent > 3)) { // ensures only ints are entered
-                userInput.next();
-                System.out.println("\nInvalid input! Input 0 to exit, 1 for Seller, 2 for Buyer, or 3 for Admin: ");
-            }
-            intent = userInput.nextInt();
+            intent = getValidatedInt(0, 3, "Invalid input! Enter 1 to close a sale early, 2 to edit existing items, 3 to run reports, or 0 to exit: ");
 
             switch (intent) {
                 case 1 -> { // close a sale early
@@ -189,14 +217,8 @@ public class Prototype {
     }
     
     public static int login() {
-        int userType = -1;
-        
         System.out.println("What type of user are you? 1 = Seller, 2 = Buyer, 3 = Admin. Enter 0 to exit: ");
-        while (!userInput.hasNextInt() && (userType < 0 || userType > 3)) { // ensures only ints are entered
-            userInput.next();
-            System.out.println("\nInvalid input! Input 0 to exit, 1 for Seller, 2 for Buyer, or 3 for Admin: ");
-        }
-        return userInput.nextInt();
+        return getValidatedInt(0, 3, "Invalid input! Input 0 to exit, 1 for Seller, 2 for Buyer, or 3 for Admin: ");
     }
     
     //TODO
@@ -205,10 +227,12 @@ public class Prototype {
         items[1] = new String[] {"1", "lorem", "dolor sit amet"};
         items[2] = new String[] {"2", "Sisyphus's Boulder", "it imagines him happy"};
         items[3] = new String[] {"3", "Where The Sidewalk Ends", "by Shel Silverstein"};
+        nextItemSlot = 4;
 
         auctions[0] = new String[] {"0", items[1][0], items[1][1], items[1][2], "19.99", "12-12-2012", "05-02-2013", "false"};
-        auctions[0] = new String[] {"1", items[2][0], items[2][1], items[2][2], "200.00", "05-27-2025", "05-28-2025", "true"};
-        auctions[0] = new String[] {"2", items[3][0], items[3][0], items[3][2], "500", "11-12-1989", "09-09-2009", "true"};
+        auctions[1] = new String[] {"1", items[2][0], items[2][1], items[2][2], "200.00", "05-27-2025", "05-28-2025", "true"};
+        auctions[2] = new String[] {"2", items[3][0], items[3][1], items[3][2], "500", "11-12-1989", "09-09-2009", "true"};
+        nextAuctionSlot = 3;
     }
     
     //TODO
@@ -230,6 +254,8 @@ public class Prototype {
             nextItemSlot++;
         }
         
+        userInput.nextLine(); // eats any newlines before prompting
+        
         System.out.println("What is the name of your item? ");
         String itemName = userInput.nextLine();
         
@@ -242,10 +268,27 @@ public class Prototype {
     public static void displayItems() {
         System.out.println("Here are all the items:");
         int i = 0;
-        while (!items[i][0].equals("")) {
+        while (i < items.length && items[i] != null) {
             System.out.printf("ITEM ID %s, %s: %s\n", items[i][0], items[i][1], items[i][2]);
             System.out.println();
             i++;
+        }
+    }
+
+    // User inputs something, check if it's an int within the range
+    public static int getValidatedInt(int min, int max, String errorMessage) {
+        while (true) {
+            if (userInput.hasNextInt()) {
+                int value = userInput.nextInt();
+
+                if (value >= min && value <= max) {
+                    return value;
+                }
+            } else {
+                userInput.next();
+            }
+
+            System.out.println(errorMessage);
         }
     }
 
