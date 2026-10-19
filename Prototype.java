@@ -1,6 +1,7 @@
 package CIS331TeamNAME;
 
-import java.util.Scanner;
+import java.util.*; // to use Scanner
+import java.io.*;   // for Java File I/O
 
 /**
  * @authors Dorian Crawford, Laura Elmore, Daniel Haddadin, Mason Noufal, Tyler Ryu, Qiuxuan Xiong, Yuyao Yang
@@ -20,10 +21,16 @@ public class Prototype {
     // items structure: [item id, item name, item decr]
     public static String[][] items = new String[256][3];
     public static int nextItemSlot = 0;
-    // auctions structure: [auction id, item id, item name, item description, current bid, date opnened, closing date, open (should be bool)]
-    public static String[][] auctions = new String[256][8];
+    // auctions structure: [auction id, item id, current bid, date opnened, closing date, open (should be bool)]
+    public static String[][] auctions = new String[256][6];
     public static int nextAuctionSlot = 0;
     
+// Files are read from the programs working directory
+// We use "|" instead of "," as the seperator so commas inside names/descriptions dont break a line apart
+public static final String ITEMS_FILE = "items.txt";
+public static final String AUCTIONS_FILE = "auctions.txt";
+public static final String DELIMITER = "|";
+
 
     public static void main(String[] args) {
         /*
@@ -159,8 +166,6 @@ public class Prototype {
                     auctions[nextAuctionSlot] = new String[] {
                         String.valueOf(nextAuctionSlot), // auction id
                         items[selectedItem][0],          // item id
-                        items[selectedItem][1],          // item name
-                        items[selectedItem][2],          // item description
                         String.valueOf(openingBid),
                         openingDate,
                         closingDate,
@@ -200,13 +205,13 @@ public class Prototype {
                 }
                 case 2 -> { // place bid on item
                     System.out.println("Here are all the open auctions:");
-                    for (int i = 0; i < auctions.length && auctions[i] != null; i++) {
-                        if (auctions[i][7].equals("true")) {
+                    for (int i = 0; i < nextAuctionSlot; i++) {
+                        if (auctions[i][5].equals("true")) {
                             System.out.printf("AUCTION # %s:\n", auctions[i][0]);
-                            System.out.printf("--ITEM: %s\n", auctions[i][2]);
-                            System.out.printf("--DESCRIPTION: %s\n", auctions[i][3]);
-                            System.out.printf("--CLOSING DATE: %s\n", auctions[i][6]);
-                            System.out.printf("--CURRENT HIGHEST BID: %s\n", auctions[i][4]);
+                            System.out.printf("--ITEM: %s\n", items[Integer.parseInt(auctions[i][1])][1]);
+                            System.out.printf("--DESCRIPTION: %s\n", items[Integer.parseInt(auctions[i][1])][2]);
+                            System.out.printf("--CLOSING DATE: %s\n", auctions[i][4]);
+                            System.out.printf("--CURRENT HIGHEST BID: %s\n", auctions[i][2]);
                             System.out.println();
                         }   
                     }
@@ -223,7 +228,7 @@ public class Prototype {
                             if (selectedIndex >= 0 &&
                                 selectedIndex < nextAuctionSlot &&
                                 auctions[selectedIndex] != null &&
-                                auctions[selectedIndex][7].equals("true")) {
+                                auctions[selectedIndex][5].equals("true")) {
                                 break;
                             }
                         } else {
@@ -242,8 +247,8 @@ public class Prototype {
                             userBid = userInput.nextDouble();
 
                             if (userBid > 0) {
-                                if (userBid > Double.parseDouble(auctions[selectedIndex][4])) {
-                                    auctions[selectedIndex][4] = String.valueOf(userBid);
+                                if (userBid > Double.parseDouble(auctions[selectedIndex][5])) {
+                                    auctions[selectedIndex][5] = String.valueOf(userBid);
                                     break;
                                 } else {
                                     System.out.println("Please place a higher bid: ");
@@ -283,10 +288,10 @@ public class Prototype {
                     System.out.println("Open Auctions: ");
                     for (int i = 0; i < nextAuctionSlot; i++) {
                         if (auctions[i] != null &&
-                            auctions[i][7].equals("true")) {
+                            auctions[i][5].equals("true")) {
 
                             System.out.printf(
-                                "Auction #%s: %s (Current Bid: %s)\n", auctions[i][0], auctions[i][2], auctions[i][4]
+                                "Auction #%s: %s (Current Bid: %s)\n", auctions[i][0], items[Integer.parseInt(auctions[i][1])][1] , auctions[i][2]
                             );
                         }
                     }
@@ -301,7 +306,7 @@ public class Prototype {
                             if (selectedAuction >= 0 &&
                                 selectedAuction < nextAuctionSlot &&
                                 auctions[selectedAuction] != null &&
-                                auctions[selectedAuction][7].equals("true")) {
+                                auctions[selectedAuction][5].equals("true")) {
                                 break;
                             }
                         } else {
@@ -311,7 +316,7 @@ public class Prototype {
                         System.out.println("Invalid auction ID!");
                     }
 
-                    auctions[selectedAuction][7] = "false";
+                    auctions[selectedAuction][5] = "false";
 
                     System.out.printf("Auction #%d has been closed!\n", selectedAuction);
                 }
@@ -343,24 +348,62 @@ public class Prototype {
         return getValidatedInt(0, 3, "Invalid input! Input 0 to exit, 1 for Seller, 2 for Buyer, or 3 for Admin: ");
     }
     
-    //TODO
     public static void loadData() {
-        items[0] = new String[] {"0", "title", "description"};
-        items[1] = new String[] {"1", "lorem", "dolor sit amet"};
-        items[2] = new String[] {"2", "Sisyphus's Boulder", "it imagines him happy"};
-        items[3] = new String[] {"3", "Where The Sidewalk Ends", "by Shel Silverstein"};
-        nextItemSlot = 4;
-
-        auctions[0] = new String[] {"0", items[1][0], items[1][1], items[1][2], "19.99", "12-12-2012", "05-02-2013", "false"};
-        auctions[1] = new String[] {"1", items[2][0], items[2][1], items[2][2], "1.00", "05-27-2025", "05-28-2025", "true"};
-        auctions[2] = new String[] {"2", items[3][0], items[3][1], items[3][2], "100.32", "11-12-1989", "09-09-2009", "true"};
-        nextAuctionSlot = 3;
+        // Read the items.csv file and put it in a global array
+        try {
+            Scanner itemsReader = new Scanner(new File("src/main/java/CIS331TeamNAME/items.csv"));
+            itemsReader.nextLine(); // eat the first line of the csv, since we don't need it
+            while(itemsReader.hasNextLine()) {
+                String row = itemsReader.nextLine();
+                String[] itemInfo = row.split(","); // split the CSV line into its parts
+                int itemIndex = Integer.parseInt(itemInfo[0]); // yeah the index is based off the id and that's bad but w/e
+                if (itemIndex >= items.length) {
+                    System.out.println("Max number of items loaded!");
+                    break;
+                }
+                items[itemIndex][0] = itemInfo[0]; // item ID
+                items[itemIndex][1] = itemInfo[1]; // item name
+                items[itemIndex][2] = itemInfo[2]; // item description
+                nextItemSlot++;
+            }
+        } catch (FileNotFoundException ex) {
+            System.getLogger(Prototype.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        }
+        
+        // Read the auctions.cs file and put it in a global array.
+        try {
+            Scanner auctionReader = new Scanner(new File("src/main/java/CIS331TeamNAME/auctions.csv"));
+            
+            auctionReader.nextLine(); // eat the first line of the csv, since we don't need it
+            while(auctionReader.hasNextLine()) {
+                String row = auctionReader.nextLine();
+                String[] auctionInfo = row.split(","); // split the CSV line into its parts
+                int auctionIndex = Integer.parseInt(auctionInfo[0]); // yeah the index is based off the id and that's bad but w/e
+                if (auctionIndex >= items.length) {
+                    System.out.println("Max number of auctions loaded!");
+                    break;
+                }
+                auctions[auctionIndex][0] = auctionInfo[0]; // auction ID
+                auctions[auctionIndex][1] = auctionInfo[1]; // item ID
+                auctions[auctionIndex][2] = auctionInfo[2]; // current bid
+                auctions[auctionIndex][3] = auctionInfo[3]; // date opened
+                auctions[auctionIndex][4] = auctionInfo[4]; // closing date
+                auctions[auctionIndex][5] = auctionInfo[5]; // open (true/false)
+                nextAuctionSlot++;
+            }
+        } catch (FileNotFoundException ex) {
+            System.getLogger(Prototype.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        }
+        
+        
+        System.out.println("All data loaded!");
     }
     
-    //TODO
+    // Overwrites both data files with everything currently in memory
     public static void saveData() {
-        return;
+        System.out.println("Data saved. Goodbye!");
     }
+
     
     public static void generateReport() {
         System.out.println("Which report would you like to run?");
@@ -378,12 +421,14 @@ public class Prototype {
                 System.out.println("\nLIVE AUCTIONS REPORT");
                 for (int i = 0; i < nextAuctionSlot; i++) {
 
-                    if (auctions[i] != null && auctions[i][7].equals("true")) {
-                        System.out.printf("\nAUCTION #%s\n", auctions[i][0]);
-                        System.out.printf("Item: %s\n", auctions[i][2]);
-                        System.out.printf("Description: %s\n", auctions[i][3]);
-                        System.out.printf("Current Bid: $%s\n", auctions[i][4]);
-                        System.out.printf("Closing Date: %s\n", auctions[i][6]);
+                    if (auctions[i] != null && auctions[i][5].equals("true")) {
+                        System.out.printf("AUCTION # %s:\n", auctions[i][0]);
+                        System.out.printf("--Item: %s\n", items[Integer.parseInt(auctions[i][1])][1]);
+                        System.out.printf("--Description: %s\n", items[Integer.parseInt(auctions[i][1])][2]);
+                        System.out.printf("--Current Highest Bid: %s\n", auctions[i][2]);
+                        System.out.printf("--Date Opened: %s\n", auctions[i][3]);
+                        System.out.printf("--Closing Date: %s\n", auctions[i][4]);
+                        System.out.println();
                     }
                 }
                 System.out.println();
@@ -409,14 +454,14 @@ public class Prototype {
                 System.out.printf("\nITEMS FOR SALE ($%.2f AND UP)\n", minimumPrice);
 
                 for (int i = 0; i < nextAuctionSlot; i++) {
-                    if (auctions[i] != null && auctions[i][7].equals("true")) {
+                    if (auctions[i] != null && auctions[i][5].equals("true")) {
 
-                        double price = Double.parseDouble(auctions[i][4]);
+                        double price = Double.parseDouble(auctions[i][2]);
 
                         if (price >= minimumPrice) {
                             System.out.printf( "Auction #%s | %s | Current Bid: $%.2f\n",
                                 auctions[i][0],
-                                auctions[i][2],
+                                items[Integer.parseInt(auctions[i][1])][1],
                                 price
                             );
                         }
@@ -431,9 +476,9 @@ public class Prototype {
 
                 // add auctions' prices to respective bins
                 for (int i = 0; i < nextAuctionSlot; i++) {
-                    if (auctions[i] != null && auctions[i][7].equals("true")) {
+                    if (auctions[i] != null && auctions[i][5].equals("true")) {
 
-                        double price = Double.parseDouble(auctions[i][4]);
+                        double price = Double.parseDouble(auctions[i][2]);
 
                         if (price <= 5) {
                             bins[0]++;
