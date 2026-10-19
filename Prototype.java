@@ -113,21 +113,55 @@ public class Prototype {
 
                     userInput.nextLine(); // eat any newlines that may be present
 
-                    System.out.println("Enter opening bid: ");
-                    String openingBid = userInput.nextLine();
+                    double openingBid;
+                    while (true) { // validate opening bid is a double
+                        System.out.println("Enter opening bid:");
 
-                    System.out.println("Enter opening date: ");
-                    String openingDate = userInput.nextLine();
+                        if (userInput.hasNextDouble()) {
+                            openingBid = userInput.nextDouble();
 
-                    System.out.println("Enter closing date: ");
-                    String closingDate = userInput.nextLine();
+                            if (openingBid >= 0) {
+                                userInput.nextLine(); // consume newline
+                                break;
+                            }
+                        } else {
+                            userInput.next();
+                        }
+
+                        System.out.println("Opening bid must be a valid number!");
+                    }
+
+                    String openingDate;
+                    while (true) { // validate user inputs date
+                        System.out.println("Enter opening date (MM-DD-YYYY):");
+                        openingDate = userInput.nextLine().trim();
+
+                        if (!openingDate.equals("")) {
+                            break;
+                        }
+
+                        System.out.println("Date cannot be blank!");
+                    }
+
+                    String closingDate;
+
+                    while (true) { // validate user inputs date
+                        System.out.println("Enter closing date (MM-DD-YYYY):");
+                        closingDate = userInput.nextLine().trim();
+
+                        if (!openingDate.isEmpty()) {
+                            break;
+                        }
+
+                        System.out.println("Date cannot be blank!");
+                    }
 
                     auctions[nextAuctionSlot] = new String[] {
                         String.valueOf(nextAuctionSlot), // auction id
                         items[selectedItem][0],          // item id
                         items[selectedItem][1],          // item name
                         items[selectedItem][2],          // item description
-                        openingBid,
+                        String.valueOf(openingBid),
                         openingDate,
                         closingDate,
                         "true"
@@ -480,7 +514,7 @@ public class Prototype {
     public static void displayItems() {
         System.out.println("Here are all the items:");
         int i = 0;
-        while (i < items.length && items[i] != null) {
+        while (i < items.length && items[i][0] != null) {
             System.out.printf("ITEM ID %s, %s: %s\n", items[i][0], items[i][1], items[i][2]);
             System.out.println();
             i++;
