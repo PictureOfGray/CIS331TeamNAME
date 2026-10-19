@@ -62,6 +62,7 @@ public class Prototype {
             switch (intent) {
                 case 1 -> { // create an item
                     addItem(nextItemSlot);
+                    System.out.println("Item made!");
                 }
                 case 2 -> { // editing existing item
                     // display existing items
@@ -86,8 +87,58 @@ public class Prototype {
                         System.out.println("Invalid item ID!");
                     }
                     addItem(selectedIndex);
+                    System.out.println("Item edited!");
                 }
                 case 3 -> { // create an auction
+                    displayItems();
+
+                    int selectedItem;
+                    while (true) {
+                        System.out.println("What item do you want to auction? Input item ID:");
+
+                        if (userInput.hasNextInt()) { // validate for int and valid ID
+                            selectedItem = userInput.nextInt();
+
+                            if (selectedItem >= 0 &&
+                                selectedItem < nextItemSlot &&
+                                items[selectedItem] != null) {
+                                break;
+                            }
+                        } else {
+                            userInput.next();
+                        }
+
+                        System.out.println("Invalid item ID!");
+                    }
+
+                    userInput.nextLine(); // eat any newlines that may be present
+
+                    System.out.println("Enter opening bid: ");
+                    String openingBid = userInput.nextLine();
+
+                    System.out.println("Enter opening date: ");
+                    String openingDate = userInput.nextLine();
+
+                    System.out.println("Enter closing date: ");
+                    String closingDate = userInput.nextLine();
+
+                    auctions[nextAuctionSlot] = new String[] {
+                        String.valueOf(nextAuctionSlot), // auction id
+                        items[selectedItem][0],          // item id
+                        items[selectedItem][1],          // item name
+                        items[selectedItem][2],          // item description
+                        openingBid,
+                        openingDate,
+                        closingDate,
+                        "true"
+                    };
+
+                    System.out.printf(
+                        "Auction #%s created for item '%s'.\n", auctions[nextAuctionSlot][0], items[selectedItem][1]
+                    );
+
+                    nextAuctionSlot++;
+                    System.out.println("Auction made!");
                 }
                 case 0 -> { // exit
                     return;
@@ -114,7 +165,7 @@ public class Prototype {
                     displayItems();
                 }
                 case 2 -> { // place bid on item
-                    System.out.println("Here are all the open items:");
+                    System.out.println("Here are all the open auctions:");
                     for (int i = 0; i < auctions.length && auctions[i] != null; i++) {
                         if (auctions[i][7].equals("true")) {
                             System.out.printf("AUCTION # %s:\n", auctions[i][0]);
@@ -170,6 +221,7 @@ public class Prototype {
 
                         System.out.println("Bid must be greater than 0! Please input again: ");
                     }
+                    System.out.println("Bid placed!");
                     
                 }
                 case 0 -> { // exit
@@ -194,6 +246,40 @@ public class Prototype {
 
             switch (intent) {
                 case 1 -> { // close a sale early
+                    System.out.println("Open Auctions: ");
+                    for (int i = 0; i < nextAuctionSlot; i++) {
+                        if (auctions[i] != null &&
+                            auctions[i][7].equals("true")) {
+
+                            System.out.printf(
+                                "Auction #%s: %s (Current Bid: %s)\n", auctions[i][0], auctions[i][2], auctions[i][4]
+                            );
+                        }
+                    }
+
+                    int selectedAuction;
+                    while (true) { // validate input for int and valid ID
+                        System.out.println("Which auction do you want to close? Input ID: ");
+
+                        if (userInput.hasNextInt()) {
+                            selectedAuction = userInput.nextInt();
+
+                            if (selectedAuction >= 0 &&
+                                selectedAuction < nextAuctionSlot &&
+                                auctions[selectedAuction] != null &&
+                                auctions[selectedAuction][7].equals("true")) {
+                                break;
+                            }
+                        } else {
+                            userInput.next();
+                        }
+
+                        System.out.println("Invalid auction ID!");
+                    }
+
+                    auctions[selectedAuction][7] = "false";
+
+                    System.out.printf("Auction #%d has been closed!\n", selectedAuction);
                 }
                 case 2 -> { // edit an existing item
                     // display existing items
@@ -206,8 +292,10 @@ public class Prototype {
                     }
                     int selectedIndex = userInput.nextInt();
                     addItem(selectedIndex);
+                    System.out.println("Item edited!");
                 }
                 case 3 -> { // run reports
+                    generateReport();
                 }
                 case 0 -> { // exit
                     return;
@@ -230,8 +318,8 @@ public class Prototype {
         nextItemSlot = 4;
 
         auctions[0] = new String[] {"0", items[1][0], items[1][1], items[1][2], "19.99", "12-12-2012", "05-02-2013", "false"};
-        auctions[1] = new String[] {"1", items[2][0], items[2][1], items[2][2], "200.00", "05-27-2025", "05-28-2025", "true"};
-        auctions[2] = new String[] {"2", items[3][0], items[3][1], items[3][2], "500", "11-12-1989", "09-09-2009", "true"};
+        auctions[1] = new String[] {"1", items[2][0], items[2][1], items[2][2], "1.00", "05-27-2025", "05-28-2025", "true"};
+        auctions[2] = new String[] {"2", items[3][0], items[3][1], items[3][2], "100.32", "11-12-1989", "09-09-2009", "true"};
         nextAuctionSlot = 3;
     }
     
@@ -241,11 +329,135 @@ public class Prototype {
     }
     
     public static void generateReport() {
-        /*
-        * Report on live auctions and their items for sale, grouped by auction
-        * Report showing all items for sale with a price filter
-        * Charting report that produces a histogram of price ranges. Length of bars is proportional to overall total of items
-        */
+        System.out.println("Which report would you like to run?");
+        System.out.println("1: Live Auctions Report");
+        System.out.println("2: Items For Sale Report");
+        System.out.println("3: Price Histogram");
+        System.out.println("0: Return");
+        System.out.println("Please input a number: ");
+
+        int reportType = getValidatedInt(0, 3, "Invalid input! Please select option 1, 2, 3, or 0 to return:");
+
+        switch (reportType) {
+
+            case 1 -> { // Live auctions grouped by auction
+                System.out.println("\nLIVE AUCTIONS REPORT");
+                for (int i = 0; i < nextAuctionSlot; i++) {
+
+                    if (auctions[i] != null && auctions[i][7].equals("true")) {
+                        System.out.printf("\nAUCTION #%s\n", auctions[i][0]);
+                        System.out.printf("Item: %s\n", auctions[i][2]);
+                        System.out.printf("Description: %s\n", auctions[i][3]);
+                        System.out.printf("Current Bid: $%s\n", auctions[i][4]);
+                        System.out.printf("Closing Date: %s\n", auctions[i][6]);
+                    }
+                }
+                System.out.println();
+            }
+
+            case 2 -> { // Items currently for sale with price filter
+                System.out.println("Enter a price to show items whose current bid is at least that: ");
+
+                double minimumPrice;
+                while (true) { // validate user is entering a double
+                    if (userInput.hasNextDouble()) {
+                        minimumPrice = userInput.nextDouble();
+                        if (minimumPrice >= 0) {
+                            break;
+                        }
+                    } else {
+                        userInput.next();
+                    }
+
+                    System.out.println("Please enter a valid non-negative price:");
+                }
+
+                System.out.printf("\nITEMS FOR SALE ($%.2f AND UP)\n", minimumPrice);
+
+                for (int i = 0; i < nextAuctionSlot; i++) {
+                    if (auctions[i] != null && auctions[i][7].equals("true")) {
+
+                        double price = Double.parseDouble(auctions[i][4]);
+
+                        if (price >= minimumPrice) {
+                            System.out.printf( "Auction #%s | %s | Current Bid: $%.2f\n",
+                                auctions[i][0],
+                                auctions[i][2],
+                                price
+                            );
+                        }
+                    }
+                }
+
+                System.out.println();
+            }
+
+            case 3 -> { // Histogram report
+                int[] bins = new int[5];
+
+                // add auctions' prices to respective bins
+                for (int i = 0; i < nextAuctionSlot; i++) {
+                    if (auctions[i] != null && auctions[i][7].equals("true")) {
+
+                        double price = Double.parseDouble(auctions[i][4]);
+
+                        if (price <= 5) {
+                            bins[0]++;
+                        }
+                        else if (price <= 10) {
+                            bins[1]++;
+                        }
+                        else if (price <= 20) {
+                            bins[2]++;
+                        }
+                        else if (price <= 50) {
+                            bins[3]++;
+                        }
+                        else {
+                            bins[4]++;
+                        }
+                    }
+                }
+
+                int maxCount = 0;
+
+                // Finds the max value among the bins. Thanks GeeksForGeeks!
+                for (int count : bins) {
+                    if (count > maxCount) {
+                        maxCount = count;
+                    }
+                }
+
+                // Print out report
+                String[] labels = {"$1 - $5", "$6 - $10", "$11 - $20", "$21 - $50", "$51+"};
+
+                System.out.println("\nPRICE HISTOGRAM");
+
+                for (int i = 0; i < bins.length; i++) {
+
+                    int barLength = 0;
+
+                    if (maxCount > 0) {
+                        barLength = (bins[i] * 10) / maxCount;
+                    }
+
+                    System.out.printf( "%-12s |", labels[i]);
+
+                    for (int j = 0; j < barLength; j++) {
+                        System.out.print("=");
+                    }
+
+                    System.out.printf(" (%d)\n", bins[i]);
+                }
+
+                System.out.println();
+            }
+
+            case 0 -> {
+                return;
+            }
+        }
+        
     }
     
     public static void addItem(int itemIndex) {
