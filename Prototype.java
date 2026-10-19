@@ -205,13 +205,13 @@ public static final String DELIMITER = "|";
                 }
                 case 2 -> { // place bid on item
                     System.out.println("Here are all the open auctions:");
-                    for (int i = 0; i < auctions.length && auctions[i] != null; i++) {
+                    for (int i = 0; i < nextAuctionSlot; i++) {
                         if (auctions[i][5].equals("true")) {
                             System.out.printf("AUCTION # %s:\n", auctions[i][0]);
                             System.out.printf("--ITEM: %s\n", items[Integer.parseInt(auctions[i][1])][1]);
                             System.out.printf("--DESCRIPTION: %s\n", items[Integer.parseInt(auctions[i][1])][2]);
-                            System.out.printf("--CLOSING DATE: %s\n", auctions[i][6]);
-                            System.out.printf("--CURRENT HIGHEST BID: %s\n", auctions[i][5]);
+                            System.out.printf("--CLOSING DATE: %s\n", auctions[i][4]);
+                            System.out.printf("--CURRENT HIGHEST BID: %s\n", auctions[i][2]);
                             System.out.println();
                         }   
                     }
@@ -351,9 +351,9 @@ public static final String DELIMITER = "|";
     public static void loadData() {
         // Read the items.csv file and put it in a global array
         try {
-            Scanner itemsReader = new Scanner(new File("/items.csv"));
-            itemsReader.next(); // eat the first line of the csv, since we don't need it
-            while(itemsReader.hasNext()) {
+            Scanner itemsReader = new Scanner(new File("src/main/java/CIS331TeamNAME/items.csv"));
+            itemsReader.nextLine(); // eat the first line of the csv, since we don't need it
+            while(itemsReader.hasNextLine()) {
                 String row = itemsReader.nextLine();
                 String[] itemInfo = row.split(","); // split the CSV line into its parts
                 int itemIndex = Integer.parseInt(itemInfo[0]); // yeah the index is based off the id and that's bad but w/e
@@ -364,16 +364,18 @@ public static final String DELIMITER = "|";
                 items[itemIndex][0] = itemInfo[0]; // item ID
                 items[itemIndex][1] = itemInfo[1]; // item name
                 items[itemIndex][2] = itemInfo[2]; // item description
+                nextItemSlot++;
             }
         } catch (FileNotFoundException ex) {
             System.getLogger(Prototype.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
         }
         
         // Read the auctions.cs file and put it in a global array.
-                try {
-            Scanner auctionReader = new Scanner(new File("/auctions.csv"));
-            auctionReader.next(); // eat the first line of the csv, since we don't need it
-            while(auctionReader.hasNext()) {
+        try {
+            Scanner auctionReader = new Scanner(new File("src/main/java/CIS331TeamNAME/auctions.csv"));
+            
+            auctionReader.nextLine(); // eat the first line of the csv, since we don't need it
+            while(auctionReader.hasNextLine()) {
                 String row = auctionReader.nextLine();
                 String[] auctionInfo = row.split(","); // split the CSV line into its parts
                 int auctionIndex = Integer.parseInt(auctionInfo[0]); // yeah the index is based off the id and that's bad but w/e
@@ -381,12 +383,13 @@ public static final String DELIMITER = "|";
                     System.out.println("Max number of auctions loaded!");
                     break;
                 }
-                items[auctionIndex][0] = auctionInfo[0]; // auction ID
-                items[auctionIndex][1] = auctionInfo[1]; // item ID
-                items[auctionIndex][2] = auctionInfo[2]; // current bid
-                items[auctionIndex][3] = auctionInfo[2]; // date opened
-                items[auctionIndex][4] = auctionInfo[2]; // closing date
-                items[auctionIndex][5] = auctionInfo[2]; // open (true/false)
+                auctions[auctionIndex][0] = auctionInfo[0]; // auction ID
+                auctions[auctionIndex][1] = auctionInfo[1]; // item ID
+                auctions[auctionIndex][2] = auctionInfo[2]; // current bid
+                auctions[auctionIndex][3] = auctionInfo[3]; // date opened
+                auctions[auctionIndex][4] = auctionInfo[4]; // closing date
+                auctions[auctionIndex][5] = auctionInfo[5]; // open (true/false)
+                nextAuctionSlot++;
             }
         } catch (FileNotFoundException ex) {
             System.getLogger(Prototype.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
@@ -422,8 +425,9 @@ public static final String DELIMITER = "|";
                         System.out.printf("AUCTION # %s:\n", auctions[i][0]);
                         System.out.printf("--Item: %s\n", items[Integer.parseInt(auctions[i][1])][1]);
                         System.out.printf("--Description: %s\n", items[Integer.parseInt(auctions[i][1])][2]);
-                        System.out.printf("--Closing Date: %s\n", auctions[i][6]);
-                        System.out.printf("--Current Highest Bid: %s\n", auctions[i][5]);
+                        System.out.printf("--Current Highest Bid: %s\n", auctions[i][2]);
+                        System.out.printf("--Date Opened: %s\n", auctions[i][3]);
+                        System.out.printf("--Closing Date: %s\n", auctions[i][4]);
                         System.out.println();
                     }
                 }
