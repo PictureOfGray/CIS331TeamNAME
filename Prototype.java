@@ -1,5 +1,8 @@
 package CIS331TeamNAME;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.Scanner;
 
 /**
@@ -24,6 +27,12 @@ public class Prototype {
     public static String[][] auctions = new String[256][8];
     public static int nextAuctionSlot = 0;
     
+// Files are read from the programs working directory
+// We use "|" instead of "," as the seperator so commas inside names/descriptions dont break a line apart
+public static final String ITEMS_FILE = "items.txt";
+public static final String AUCTIONS_FILE = "auctions.txt";
+public static final String DELIMITER = "|";
+
 
     public static void main(String[] args) {
         /*
@@ -343,23 +352,168 @@ public class Prototype {
         return getValidatedInt(0, 3, "Invalid input! Input 0 to exit, 1 for Seller, 2 for Buyer, or 3 for Admin: ");
     }
     
-    //TODO
+    // AI Assisted (Claude): loadData() and saveData() written with AI help.
+    // Team: 
+    //
+    // File format: one record per line, fields separated by "|", in the same order as the arrays.
+    //   items.txt:    id|name|description
+    //   auctions.txt: auctionId|itemId|itemName|itemDescription|currentBid|openDate|closeDate|open
+    //
+    // ID scheme: the rest of the program assumes a record's ID equals its array index, so each loaded
+    // record is stored at the index matching its ID. The next free slot (and next new ID) is then
+    // the highest loaded ID + 1, so new records never reuse an existing ID.
     public static void loadData() {
-        items[0] = new String[] {"0", "title", "description"};
-        items[1] = new String[] {"1", "lorem", "dolor sit amet"};
-        items[2] = new String[] {"2", "Sisyphus's Boulder", "it imagines him happy"};
-        items[3] = new String[] {"3", "Where The Sidewalk Ends", "by Shel Silverstein"};
-        nextItemSlot = 4;
+        // ---------- Load items ----------
+        try {
+            Scanner fileIn = new Scanner(new File(ITEMS_FILE));
+            int lineNumber = 0;
 
-        auctions[0] = new String[] {"0", items[1][0], items[1][1], items[1][2], "19.99", "12-12-2012", "05-02-2013", "false"};
-        auctions[1] = new String[] {"1", items[2][0], items[2][1], items[2][2], "1.00", "05-27-2025", "05-28-2025", "true"};
-        auctions[2] = new String[] {"2", items[3][0], items[3][1], items[3][2], "100.32", "11-12-1989", "09-09-2009", "true"};
-        nextAuctionSlot = 3;
+            while (fileIn.hasNextLine()) {
+                String line = fileIn.nextLine();
+                lineNumber++;
+
+                if (line.trim().isEmpty()) { // skip blank lines
+                    continue;
+                }
+
+                // split on "|" (it has to be escaped as "\\|" because split() takes a regex)
+                // the -1 keeps empty fields, e.g. an item with a blank description
+                String[] fields = line.split("\\|", -1);
+
+                if (fields.length != 3) {
+                    System.out.printf("Skipping bad line %d in %s (expected 3 fields)\n", lineNumber, ITEMS_FILE);
+                    continue;
+                }
+
+                try {
+                    int id = Integer.parseInt(fields[0].trim());
+
+                    if (id < 0 || id >= items.length) {
+                        System.out.printf("Skipping line %d in %s (ID out of range)\n", lineNumber, ITEMS_FILE);
+                        continue;
+                    }
+
+                    items[id] = new String[] {String.valueOf(id), fields[1], fields[2]};
+
+                    if (id >= nextItemSlot) { // next ID = highest ID so far + 1
+                        nextItemSlot = id + 1;
+                    }
+                } catch (NumberFormatException e) {
+                    System.out.printf("Skipping line %d in %s (ID is not a number)\n", lineNumber, ITEMS_FILE);
+                }
+            }
+
+            fileIn.close();
+            System.out.printf("Loaded items from %s.\n", ITEMS_FILE);
+        } catch (FileNotFoundException e) {
+            // first run, or the file was deleted: just start with no items
+            System.out.printf("%s not found. Starting with no items.\n", ITEMS_FILE);
+        }
+
+        // ---------- Load auctions ----------
+        try {
+            Scanner fileIn = new Scanner(new File(AUCTIONS_FILE));
+            int lineNumber = 0;
+
+            while (fileIn.hasNextLine()) {
+                String line = fileIn.nextLine();
+                lineNumber++;
+
+                if (line.trim().isEmpty()) {
+                    continue;
+                }
+
+                String[] fields = line.split("\\|", -1);
+
+                if (fields.length != 8) {
+                    System.out.printf("Skipping bad line %d in %s (expected 8 fields)\n", lineNumber, AUCTIONS_FILE);
+                    continue;
+                }
+
+                try {
+                    int id = Integer.parseInt(fields[0].trim());
+                    Double.parseDouble(fields[4].trim()); // make sure the bid is a number now, so reports don't crash later
+
+                    if (id < 0 || id >= auctions.length) {
+                        System.out.printf("Skipping line %d in %s (ID out of range)\n", lineNumber, AUCTIONS_FILE);
+                        continue;
+                    }
+
+                    // anything other than "true" counts as closed
+                    String open = fields[7].trim().equalsIgnoreCase("true") ? "true" : "false";
+
+                    auctions[id] = new String[] {
+                        String.valueOf(id), fields[1].trim(), fields[2], fields[3],
+                        fields[4].trim(), fields[5].trim(), fields[6].trim(), open
+                    };
+
+                    if (id >= nextAuctionSlot) {
+                        nextAuctionSlot = id + 1;
+                    }
+                } catch (NumberFormatException e) {
+                    System.out.printf("Skipping line %d in %s (ID or bid is not a number)\n", lineNumber, AUCTIONS_FILE);
+                }
+            }
+
+            fileIn.close();
+            System.out.printf("Loaded auctions from %s.\n", AUCTIONS_FILE);
+        } catch (FileNotFoundException e) {
+            System.out.printf("%s not found. Starting with no auctions.\n", AUCTIONS_FILE);
+        }
+
+        System.out.printf("%d item slot(s) and %d auction slot(s) in use.\n\n", nextItemSlot, nextAuctionSlot);
     }
     
-    //TODO
+    // Overwrites both data files with everything currently in memory
     public static void saveData() {
-        return;
+        // ---------- Save items ----------
+        try {
+            PrintWriter fileOut = new PrintWriter(ITEMS_FILE);
+
+            for (int i = 0; i < nextItemSlot; i++) {
+                if (items[i][0] != null) { // skip any empty slots
+                    fileOut.println(toLine(items[i]));
+                }
+            }
+
+            fileOut.close(); // close() is what actually writes everything to disk
+        } catch (FileNotFoundException e) {
+            System.out.printf("Could not save %s: %s\n", ITEMS_FILE, e.getMessage());
+        }
+
+        // ---------- Save auctions ----------
+        try {
+            PrintWriter fileOut = new PrintWriter(AUCTIONS_FILE);
+
+            for (int i = 0; i < nextAuctionSlot; i++) {
+                if (auctions[i][0] != null) {
+                    fileOut.println(toLine(auctions[i]));
+                }
+            }
+
+            fileOut.close();
+        } catch (FileNotFoundException e) {
+            System.out.printf("Could not save %s: %s\n", AUCTIONS_FILE, e.getMessage());
+        }
+
+        System.out.println("Data saved. Goodbye!");
+    }
+
+    // Joins one record's fields into a single "|"-separated line.
+    // If a user typed "|" into a name or description, it's swapped for "/" so the line still splits correctly when loaded.
+    public static String toLine(String[] record) {
+        String line = "";
+
+        for (int i = 0; i < record.length; i++) {
+            String field = (record[i] == null) ? "" : record[i].replace(DELIMITER, "/");
+            line += field;
+
+            if (i < record.length - 1) {
+                line += DELIMITER;
+            }
+        }
+
+        return line;
     }
     
     public static void generateReport() {
