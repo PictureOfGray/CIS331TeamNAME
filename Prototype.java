@@ -1,3 +1,15 @@
+/* TODO
+* Implement "logout" feature so that a seller can return to the role select menu, etc.
+* Implement "go back" feature so that is a buyer selects Edit Item, they can input a key to cancel the action
+* Export. Make it a CSV but instead of a comma it's a ` lol
+* Refactor instructsions in-app so they appear on multiple lines when they get a bit too long. For example:
+*   "Welcome, Buyer! What do you want to do?
+*   Input 1 to browse items, 2 to place a bid on an item. Enter 0 to exit:"
+* Add whitespace so it's not like: 
+*    "What type of user are you? 1 = Seller, 2 = Buyer, 3 = Admin. Enter 0 to exit: 
+*    2
+*    Welcome"
+*/
 package CIS331TeamNAME;
 
 import java.util.*; // to use Scanner
