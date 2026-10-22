@@ -355,7 +355,7 @@ public static final String DELIMITER = "|";
             itemsReader.nextLine(); // eat the first line of the csv, since we don't need it
             while(itemsReader.hasNextLine()) {
                 String row = itemsReader.nextLine();
-                String[] itemInfo = row.split(","); // split the CSV line into its parts
+                String[] itemInfo = row.split("|"); // split the CSV line into its parts
                 int itemIndex = Integer.parseInt(itemInfo[0]); // yeah the index is based off the id and that's bad but w/e
                 if (itemIndex >= items.length) {
                     System.out.println("Max number of items loaded!");
@@ -377,7 +377,7 @@ public static final String DELIMITER = "|";
             auctionReader.nextLine(); // eat the first line of the csv, since we don't need it
             while(auctionReader.hasNextLine()) {
                 String row = auctionReader.nextLine();
-                String[] auctionInfo = row.split(","); // split the CSV line into its parts
+                String[] auctionInfo = row.split("|"); // split the CSV line into its parts
                 int auctionIndex = Integer.parseInt(auctionInfo[0]); // yeah the index is based off the id and that's bad but w/e
                 if (auctionIndex >= items.length) {
                     System.out.println("Max number of auctions loaded!");
