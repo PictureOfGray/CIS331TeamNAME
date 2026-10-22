@@ -24,12 +24,6 @@ public class Prototype {
     // auctions structure: [auction id, item id, current bid, date opnened, closing date, open (should be bool)]
     public static String[][] auctions = new String[256][6];
     public static int nextAuctionSlot = 0;
-    
-// Files are read from the programs working directory
-// We use "|" instead of "," as the seperator so commas inside names/descriptions dont break a line apart
-public static final String ITEMS_FILE = "items.txt";
-public static final String AUCTIONS_FILE = "auctions.txt";
-public static final String DELIMITER = "|";
 
 
     public static void main(String[] args) {
@@ -40,7 +34,7 @@ public static final String DELIMITER = "|";
         * Data is automatically saved and program ends.
         */
         loadData();
-            int userType = login();
+        int userType = login();
         switch (userType) {
             case 1 -> sellerMenu();
             case 2 -> buyerMenu();
@@ -355,7 +349,7 @@ public static final String DELIMITER = "|";
             itemsReader.nextLine(); // eat the first line of the csv, since we don't need it
             while(itemsReader.hasNextLine()) {
                 String row = itemsReader.nextLine();
-                String[] itemInfo = row.split("|"); // split the CSV line into its parts
+                String[] itemInfo = row.split("`"); // split the CSV line into its parts
                 int itemIndex = Integer.parseInt(itemInfo[0]); // yeah the index is based off the id and that's bad but w/e
                 if (itemIndex >= items.length) {
                     System.out.println("Max number of items loaded!");
@@ -377,7 +371,7 @@ public static final String DELIMITER = "|";
             auctionReader.nextLine(); // eat the first line of the csv, since we don't need it
             while(auctionReader.hasNextLine()) {
                 String row = auctionReader.nextLine();
-                String[] auctionInfo = row.split("|"); // split the CSV line into its parts
+                String[] auctionInfo = row.split("`"); // split the CSV line into its parts
                 int auctionIndex = Integer.parseInt(auctionInfo[0]); // yeah the index is based off the id and that's bad but w/e
                 if (auctionIndex >= items.length) {
                     System.out.println("Max number of auctions loaded!");

@@ -1,4 +1,4 @@
-itemID|itemName|itemDescr
-0|lorem|ipsum dolor sit amet
-1|Sisyphus's bolder|imagines him happy
-2|Where the Sidewalk Ends|by Shel Silverstein
+itemID`itemName`itemDescr
+0`lorem`ipsum dolor sit amet
+1`Sisyphus's bolder`imagines him happy
+2`Where the Sidewalk Ends`by Shel Silverstein
