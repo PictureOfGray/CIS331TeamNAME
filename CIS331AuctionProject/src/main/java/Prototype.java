@@ -356,7 +356,7 @@ public class Prototype {
     public static void loadData() {
         // Read the items.csv file and put it in a global array
         try {
-            Scanner itemsReader = new Scanner(new File("src/main/java/CIS331TeamNAME/items.csv"));
+            Scanner itemsReader = new Scanner(new File("src/main/java/items.csv"));
             itemsReader.nextLine(); // eat the first line of the csv, since we don't need it
             while(itemsReader.hasNextLine()) {
                 String row = itemsReader.nextLine();
@@ -377,7 +377,7 @@ public class Prototype {
         
         // Read the auctions.cs file and put it in a global array.
         try {
-            Scanner auctionReader = new Scanner(new File("src/main/java/CIS331TeamNAME/auctions.csv"));
+            Scanner auctionReader = new Scanner(new File("src/main/java/auctions.csv"));
             
             auctionReader.nextLine(); // eat the first line of the csv, since we don't need it
             while(auctionReader.hasNextLine()) {
