@@ -5,7 +5,7 @@
 * Refactor instructsions in-app so they appear on multiple lines when they get a bit too long. For example:
 *   "Welcome, Buyer! What do you want to do?
 *   Input 1 to browse items, 2 to place a bid on an item. Enter 0 to exit:"
-* Add whitespace so it's not like: 
+* Add whitespace so it's *not* like: 
 *    "What type of user are you? 1 = Seller, 2 = Buyer, 3 = Admin. Enter 0 to exit: 
 *    2
 *    Welcome"
