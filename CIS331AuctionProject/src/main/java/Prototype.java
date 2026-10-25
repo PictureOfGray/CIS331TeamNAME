@@ -417,7 +417,9 @@ public class Prototype {
     public static void loadData() {
         try { // this is in a try statement in case there's an error
             Scanner itemsReader = new Scanner(new File("src/main/java/items.csv"));
-            itemsReader.nextLine(); // eat the first line of the csv, since we don't need it
+            if (itemsReader.hasNextLine()) {
+                itemsReader.nextLine(); // eat header row
+            }
             
             // while there's still content, get a line, break it up into pieces of data, and save to array
             while(itemsReader.hasNextLine()) {
@@ -436,13 +438,18 @@ public class Prototype {
                 nextItemSlot++;
             }
         } catch (FileNotFoundException ex) {
-            System.getLogger(Prototype.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+            System.out.println("items.csv not found. Starting with no items.");
+
+            items = new String[256][3];
+            nextItemSlot = 0;
         }
         
         // Read the auctions.cs file and put it in a global array.
         try {
             Scanner auctionReader = new Scanner(new File("src/main/java/auctions.csv"));
-            auctionReader.nextLine(); // eat the first line of the csv, since we don't need it
+            if (auctionReader.hasNextLine()) {
+                auctionReader.nextLine(); // eat header row
+            }
 
             while(auctionReader.hasNextLine()) {
                 String row = auctionReader.nextLine();
@@ -463,7 +470,10 @@ public class Prototype {
                 nextAuctionSlot++;
             }
         } catch (FileNotFoundException ex) {
-            System.getLogger(Prototype.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+            System.out.println("auctions.csv not found. Starting with no auctions.");
+
+            auctions = new String[256][6];
+            nextAuctionSlot = 0;
         }
         
         
