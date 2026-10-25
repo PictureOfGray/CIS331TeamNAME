@@ -1,8 +1,3 @@
-/* TODO
-* Implement "logout" feature so that a seller can return to the role select menu, etc.
-* Implement "go back" feature so that is a buyer selects Edit Item, they can input a key to cancel the action
-*/
-
 import java.util.*; // to use Scanner
 import java.io.*;   // for Java File I/O
 
@@ -75,25 +70,30 @@ public class Prototype {
         
         // this whole workflow is in a while loop so the seller can keep selection actions until done
         while (intent > 0 || intent == -1) {
-            System.out.println("Welcome, Seller! What do you want to do?\n Input 1 to create an item, 2 to edit an existing item, 3 to create an auction. Enter 0 to exit: ");
-            intent = getValidatedInt(0, 3, "Invalid input!\n Enter 1 to create an item, 2 to edit an existing item, 3 to create an auction, or 0 to exit: ");
+            System.out.println("Welcome, Seller! What do you want to do?\n Input 1 to create an item, 2 to edit an existing item, 3 to create an auction. Enter 0 to logout: ");
+            intent = getValidatedInt(0, 3, "Invalid input!\n Enter 1 to create an item, 2 to edit an existing item, 3 to create an auction, or 0 to logout: ");
 
             switch (intent) { // process user choice
                 case 1 -> { // create an item
                     addItem(nextItemSlot);
-                    System.out.println("Item made!");
+                    System.out.println("Done!");
                 }
                 case 2 -> { // editing existing item
                     // display existing items
                     displayItems();
 
-                    int selectedIndex;
+                    int selectedIndex = -1;
                     while (true) { // validate user input to make sure it's an int in index range
-                        System.out.println("What item do you want to edit?\n Input id: ");
+                        System.out.println("What item do you want to edit?\n Input id, or -1 to cancel: ");
 
                         if (userInput.hasNextInt()) {
                             selectedIndex = userInput.nextInt();
 
+                            if (selectedIndex == -1) {
+                                System.out.println("Item editing cancelled.");
+                                break;
+                            }
+                            
                             if (selectedIndex >= 0 &&
                                 selectedIndex < nextItemSlot &&
                                 items[selectedIndex] != null) {
@@ -105,19 +105,28 @@ public class Prototype {
                         // if input isn't an int, or if it is and isn't in the range of item indices
                         System.out.println("Invalid item ID!");
                     }
+                    if (selectedIndex == -1) {
+                        break;
+                    }
+                    
                     addItem(selectedIndex);
                     System.out.println("Item edited!");
                 }
                 case 3 -> { // create an auction
                     displayItems();
 
-                    int selectedItem;
+                    int selectedItem = -1;
                     while (true) { // validate user input
-                        System.out.println("What item do you want to auction?\n Input item ID:");
+                        System.out.println("What item do you want to auction?\n Input item ID, or -1 to cancel:");
 
                         if (userInput.hasNextInt()) { // validate for int and valid ID
                             selectedItem = userInput.nextInt();
 
+                            if (selectedItem == -1) {
+                                System.out.println("Bid cancelled.");
+                                break;
+                            }
+                            
                             if (selectedItem >= 0 &&
                                 selectedItem < nextItemSlot &&
                                 items[selectedItem] != null) {
@@ -126,8 +135,12 @@ public class Prototype {
                         } else {
                             userInput.next();
                         }
+                        
                         // if input isn't an int, or if it is and isn't in range of the items indices, print
                         System.out.println("Invalid item ID!");
+                    }
+                    if (selectedItem == -1) {
+                        break;
                     }
 
                     userInput.nextLine(); // eat any newlines that may be present
@@ -138,7 +151,7 @@ public class Prototype {
 
                         if (userInput.hasNextDouble()) {
                             openingBid = userInput.nextDouble();
-
+                            
                             if (openingBid >= 0) {
                                 userInput.nextLine(); // consume newline
                                 break;
@@ -154,7 +167,7 @@ public class Prototype {
                     while (true) { // validate user inputs date
                         System.out.println("Enter opening date (MM-DD-YYYY):");
                         openingDate = userInput.nextLine().trim();
-
+                        
                         if (!openingDate.equals("")) {
                             break;
                         }
@@ -211,8 +224,8 @@ public class Prototype {
         
         // this whole workflow is in a while loop so the buyer can keep doing buyer things after selecting
         while (intent > 0 || intent == -1) {
-            System.out.println("Welcome, Buyer! What do you want to do?\n Input 1 to browse items, 2 to place a bid on an item. Enter 0 to exit: ");
-            intent = getValidatedInt(0, 2, "Invalid input!\n Enter 1 to browse items, 2 to place a bid, or 0 to exit: ");
+            System.out.println("Welcome, Buyer! What do you want to do?\n Input 1 to browse items, 2 to place a bid on an item. Enter 0 to logout: ");
+            intent = getValidatedInt(0, 2, "Invalid input!\n Enter 1 to browse items, 2 to place a bid, or 0 to logout: ");
 
             switch (intent) { // handles which action the buyer inputs
                 case 1 -> { // browse items
@@ -232,14 +245,19 @@ public class Prototype {
                     }
                     
                     System.out.println("Which item do you want to bid on?\n Input id: ");
-                    int selectedIndex;
-
+                    
+                    int selectedIndex = -1;
                     while (true) { // validate int and proper index is inputted
-                        System.out.println("Which auction do you want to bid on?");
+                        System.out.println("Which auction do you want to bid on? Input -1 to cancel");
 
                         if (userInput.hasNextInt()) {
                             selectedIndex = userInput.nextInt();
 
+                            if (selectedIndex == -1) {
+                                System.out.println("Bid cancelled.");
+                                break;
+                            }
+                            
                             if (selectedIndex >= 0 &&
                                 selectedIndex < nextAuctionSlot &&
                                 auctions[selectedIndex] != null &&
@@ -252,6 +270,10 @@ public class Prototype {
                         // if input isn't an int, or is and isn't in the index/auction's closed
                         System.out.println("Invalid auction ID!\n Please input an auction id: ");
                     }
+                    if (selectedIndex == -1) {
+                        break;
+                    }
+                    
                     
                     System.out.println("What is your bid? ");
                     double userBid;
@@ -295,30 +317,36 @@ public class Prototype {
         
         // this whole workflow is in a while loop so the admin can keep doing admin things after an action
         while (intent > 0 || intent == -1) {
-            System.out.println("Welcome, Admin! What do you want to do?\n Input 1 to close a sale early, 2 to edit an existing item, 3 to run reports. Enter 0 to exit: ");
-            intent = getValidatedInt(0, 3, "Invalid input!\n Enter 1 to close a sale early, 2 to edit existing items, 3 to run reports, or 0 to exit: ");
+            System.out.println("Welcome, Admin! What do you want to do?\n Input 1 to close a sale early, 2 to edit an existing item, 3 to run reports. Enter 0 to logout: ");
+            intent = getValidatedInt(0, 3, "Invalid input!\n Enter 1 to close a sale early, 2 to edit existing items, 3 to run reports, or 0 to logout: ");
 
             switch (intent) { // looks at input and runs respective action
                 case 1 -> { // close a sale early
                     // display all open auctions
-                    System.out.println("Open Auctions: ");
+                    System.out.println("Here are all the open auctions:");
                     for (int i = 0; i < nextAuctionSlot; i++) {
-                        if (auctions[i] != null &&
-                            auctions[i][5].equals("true")) {
-
-                            System.out.printf(
-                                "Auction #%s: %s (Current Bid: %s)\n", auctions[i][0], items[Integer.parseInt(auctions[i][1])][1] , auctions[i][2]
-                            );
-                        }
+                        if (auctions[i][5].equals("true")) {
+                            System.out.printf("AUCTION # %s:\n", auctions[i][0]);
+                            System.out.printf("--ITEM: %s\n", items[Integer.parseInt(auctions[i][1])][1]);
+                            System.out.printf("--DESCRIPTION: %s\n", items[Integer.parseInt(auctions[i][1])][2]);
+                            System.out.printf("--CLOSING DATE: %s\n", auctions[i][4]);
+                            System.out.printf("--CURRENT HIGHEST BID: %s\n", auctions[i][2]);
+                            System.out.println();
+                        }   
                     }
 
-                    int selectedAuction;
+                    int selectedAuction = -1;
                     while (true) { // validate input for int and valid ID
-                        System.out.println("Which auction do you want to close?\n Input ID: ");
+                        System.out.println("Which auction do you want to close?\n Input ID, or -1 to cancel: ");
 
                         if (userInput.hasNextInt()) {
                             selectedAuction = userInput.nextInt();
 
+                            if (selectedAuction == -1) {
+                                System.out.println("Action cancelled.");
+                                break;
+                            }
+                            
                             if (selectedAuction >= 0 &&
                                 selectedAuction < nextAuctionSlot &&
                                 auctions[selectedAuction] != null &&
@@ -331,6 +359,9 @@ public class Prototype {
                         // if input isn't an int, print this:
                         System.out.println("Invalid auction ID!");
                     }
+                    if (selectedAuction == -1) {
+                        break;
+                    }
 
                     auctions[selectedAuction][5] = "false"; // change open field to false, i.e., closed
 
@@ -340,14 +371,33 @@ public class Prototype {
                     // display existing items
                     displayItems();
 
-                    System.out.println("What item do you want to edit?\n Input id: ");
+                    int selectedIndex = -1;
+                    while (true) { // validate user input to make sure it's an int in index range
+                        System.out.println("What item do you want to edit?\n Input id, or -1 to cancel: ");
 
-                    while (!userInput.hasNextInt()) { // ensures proper ID is entered
-                        userInput.next();
-                        System.out.println("\nInvalid input!\n Input ID of the item you want to edit: ");
+                        if (userInput.hasNextInt()) {
+                            selectedIndex = userInput.nextInt();
+
+                            if (selectedIndex == -1) {
+                                System.out.println("Item editing cancelled.");
+                                break;
+                            }
+                            
+                            if (selectedIndex >= 0 &&
+                                selectedIndex < nextItemSlot &&
+                                items[selectedIndex] != null) {
+                                break;
+                            }
+                        } else {
+                            userInput.next();
+                        }
+                        // if input isn't an int, or if it is and isn't in the range of item indices
+                        System.out.println("Invalid item ID! Enter ID or -1 to cancel");
+                    }
+                    if (selectedIndex == -1) {
+                        break;
                     }
 
-                    int selectedIndex = userInput.nextInt();
                     addItem(selectedIndex);
                     System.out.println("Item edited!");
                 }
@@ -617,8 +667,12 @@ public class Prototype {
         
         userInput.nextLine(); // eats any newlines before prompting
         
-        System.out.println("What is the name of your item? ");
-        String itemName = userInput.nextLine();
+        System.out.println("What is the name of your item? Or enter -1 to cancel ");
+        String intent = userInput.nextLine();
+        if (intent.equals("-1")) {
+            return;
+        }
+        String itemName = intent;
         
         System.out.println("What is the description of your item? ");
         String itemDescr = userInput.nextLine();
@@ -644,6 +698,10 @@ public class Prototype {
             if (userInput.hasNextInt()) {
                 int value = userInput.nextInt();
 
+                if (value == -1) {
+                    return -1;
+                }
+                
                 if (value >= min && value <= max) {
                     return value;
                 }
