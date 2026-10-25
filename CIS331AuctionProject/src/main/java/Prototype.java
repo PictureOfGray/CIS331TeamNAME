@@ -2,13 +2,6 @@
 * Implement "logout" feature so that a seller can return to the role select menu, etc.
 * Implement "go back" feature so that is a buyer selects Edit Item, they can input a key to cancel the action
 * Export. Make it a CSV but instead of a comma it's a ` lol
-* Refactor instructsions in-app so they appear on multiple lines when they get a bit too long. For example:
-*   "Welcome, Buyer! What do you want to do?
-*   Input 1 to browse items, 2 to place a bid on an item. Enter 0 to exit:"
-* Add whitespace so it's *not* like: 
-*    "What type of user are you? 1 = Seller, 2 = Buyer, 3 = Admin. Enter 0 to exit: 
-*    2
-*    Welcome"
 */
 
 import java.util.*; // to use Scanner
@@ -66,8 +59,8 @@ public class Prototype {
     * Function to give the user the choice of which role they want to be (Seller, Buyer, or Admin)
     */
     public static int login() {
-        System.out.println("What type of user are you? 1 = Seller, 2 = Buyer, 3 = Admin. Enter 0 to exit: ");
-        return getValidatedInt(0, 3, "Invalid input! Input 0 to exit, 1 for Seller, 2 for Buyer, or 3 for Admin: ");
+        System.out.println("What type of user are you?\n 1 = Seller, 2 = Buyer, 3 = Admin. Enter 0 to exit: ");
+        return getValidatedInt(0, 3, "Invalid input!\n Input 0 to exit, 1 for Seller, 2 for Buyer, or 3 for Admin: ");
     }
 
     
@@ -83,8 +76,8 @@ public class Prototype {
         
         // this whole workflow is in a while loop so the seller can keep selection actions until done
         while (intent > 0 || intent == -1) {
-            System.out.println("Welcome, Seller! What do you want to do? Input 1 to create an item, 2 to edit an existing item, 3 to create an auction. Enter 0 to exit: ");
-            intent = getValidatedInt(0, 3, "Invalid input! Enter 1 to create an item, 2 to edit an existing item, 3 to create an auction, or 0 to exit: ");
+            System.out.println("Welcome, Seller! What do you want to do?\n Input 1 to create an item, 2 to edit an existing item, 3 to create an auction. Enter 0 to exit: ");
+            intent = getValidatedInt(0, 3, "Invalid input!\n Enter 1 to create an item, 2 to edit an existing item, 3 to create an auction, or 0 to exit: ");
 
             switch (intent) { // process user choice
                 case 1 -> { // create an item
@@ -97,7 +90,7 @@ public class Prototype {
 
                     int selectedIndex;
                     while (true) { // validate user input to make sure it's an int in index range
-                        System.out.println("What item do you want to edit? Input id: ");
+                        System.out.println("What item do you want to edit?\n Input id: ");
 
                         if (userInput.hasNextInt()) {
                             selectedIndex = userInput.nextInt();
@@ -121,7 +114,7 @@ public class Prototype {
 
                     int selectedItem;
                     while (true) { // validate user input
-                        System.out.println("What item do you want to auction? Input item ID:");
+                        System.out.println("What item do you want to auction?\n Input item ID:");
 
                         if (userInput.hasNextInt()) { // validate for int and valid ID
                             selectedItem = userInput.nextInt();
@@ -219,8 +212,8 @@ public class Prototype {
         
         // this whole workflow is in a while loop so the buyer can keep doing buyer things after selecting
         while (intent > 0 || intent == -1) {
-            System.out.println("Welcome, Buyer! What do you want to do? Input 1 to browse items, 2 to place a bid on an item. Enter 0 to exit: ");
-            intent = getValidatedInt(0, 2, "Invalid input! Enter 1 to browse items, 2 to place a bid, or 0 to exit: ");
+            System.out.println("Welcome, Buyer! What do you want to do?\n Input 1 to browse items, 2 to place a bid on an item. Enter 0 to exit: ");
+            intent = getValidatedInt(0, 2, "Invalid input!\n Enter 1 to browse items, 2 to place a bid, or 0 to exit: ");
 
             switch (intent) { // handles which action the buyer inputs
                 case 1 -> { // browse items
@@ -239,7 +232,7 @@ public class Prototype {
                         }   
                     }
                     
-                    System.out.println("Which item do you want to bid on? Input id: ");
+                    System.out.println("Which item do you want to bid on?\n Input id: ");
                     int selectedIndex;
 
                     while (true) { // validate int and proper index is inputted
@@ -258,7 +251,7 @@ public class Prototype {
                             userInput.next();
                         }
                         // if input isn't an int, or is and isn't in the index/auction's closed
-                        System.out.println("Invalid auction ID! Please input an auction id: ");
+                        System.out.println("Invalid auction ID!\n Please input an auction id: ");
                     }
                     
                     System.out.println("What is your bid? ");
@@ -303,8 +296,8 @@ public class Prototype {
         
         // this whole workflow is in a while loop so the admin can keep doing admin things after an action
         while (intent > 0 || intent == -1) {
-            System.out.println("Welcome, Admin! What do you want to do? Input 1 to close a sale early, 2 to edit an existing item, 3 to run reports. Enter 0 to exit: ");
-            intent = getValidatedInt(0, 3, "Invalid input! Enter 1 to close a sale early, 2 to edit existing items, 3 to run reports, or 0 to exit: ");
+            System.out.println("Welcome, Admin! What do you want to do?\n Input 1 to close a sale early, 2 to edit an existing item, 3 to run reports. Enter 0 to exit: ");
+            intent = getValidatedInt(0, 3, "Invalid input!\n Enter 1 to close a sale early, 2 to edit existing items, 3 to run reports, or 0 to exit: ");
 
             switch (intent) { // looks at input and runs respective action
                 case 1 -> { // close a sale early
@@ -322,7 +315,7 @@ public class Prototype {
 
                     int selectedAuction;
                     while (true) { // validate input for int and valid ID
-                        System.out.println("Which auction do you want to close? Input ID: ");
+                        System.out.println("Which auction do you want to close?\n Input ID: ");
 
                         if (userInput.hasNextInt()) {
                             selectedAuction = userInput.nextInt();
@@ -348,11 +341,11 @@ public class Prototype {
                     // display existing items
                     displayItems();
 
-                    System.out.println("What item do you want to edit? Input id: ");
+                    System.out.println("What item do you want to edit?\n Input id: ");
 
                     while (!userInput.hasNextInt()) { // ensures proper ID is entered
                         userInput.next();
-                        System.out.println("\nInvalid input! Input ID of the item you want to edit: ");
+                        System.out.println("\nInvalid input!\n Input ID of the item you want to edit: ");
                     }
 
                     int selectedIndex = userInput.nextInt();
@@ -444,7 +437,7 @@ public class Prototype {
         System.out.println("0: Return");
         System.out.println("Please input a number: ");
 
-        int reportType = getValidatedInt(0, 3, "Invalid input! Please select option 1, 2, 3, or 0 to return:");
+        int reportType = getValidatedInt(0, 3, "Invalid input!\n Please select option 1, 2, 3, or 0 to return:");
 
         switch (reportType) { // generate a report based on which input was given
 
