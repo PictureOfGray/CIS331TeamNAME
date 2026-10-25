@@ -1,7 +1,6 @@
 /* TODO
 * Implement "logout" feature so that a seller can return to the role select menu, etc.
 * Implement "go back" feature so that is a buyer selects Edit Item, they can input a key to cancel the action
-* Export. Make it a CSV but instead of a comma it's a ` lol
 */
 
 import java.util.*; // to use Scanner
@@ -9,7 +8,7 @@ import java.io.*;   // for Java File I/O
 
 /**
  * @authors Dorian Crawford, Laura Elmore, Daniel Haddadin, Mason Noufal, Tyler Ryu, Qiuxuan Xiong, Yuyao Yang
- * @date 10/16/2026
+ * @date 10/24/2026
  * @purpose This is a console-based prototype of an auctioneering system
  * @disclaimer
  */
@@ -261,8 +260,8 @@ public class Prototype {
                             userBid = userInput.nextDouble();
 
                             if (userBid > 0) {
-                                if (userBid > Double.parseDouble(auctions[selectedIndex][5])) {
-                                    auctions[selectedIndex][5] = String.valueOf(userBid);
+                                if (userBid > Double.parseDouble(auctions[selectedIndex][2])) {
+                                    auctions[selectedIndex][2] = String.valueOf(userBid);
                                     break;
                                 } else { // bid is a double but less than current bid
                                     System.out.println("Please place a higher bid: ");
@@ -425,8 +424,52 @@ public class Prototype {
     *  Saves like a CSV, except instead of a comma separating values it's a ` (backtick)
     */
     public static void saveData() {
+    try { // this is in a try in case there's a file exception
+        // This is for saving items.csv
+        PrintWriter itemWriter = new PrintWriter("src/main/java/items.csv");
+
+        // Header row because we're still pretending to have CSVs
+        itemWriter.println("itemID`itemName`itemDescr");
+
+        for (int i = 0; i < nextItemSlot; i++) {
+            if (items[i] != null) {
+                itemWriter.println(
+                    items[i][0] + "`" +
+                    items[i][1] + "`" +
+                    items[i][2]
+                );
+            }
+        }
+
+        itemWriter.close();
+
+        // This is for saving auctions.csv
+        PrintWriter auctionWriter = new PrintWriter("src/main/java/auctions.csv");
+
+        // Header row
+        auctionWriter.println("auctionID`itemID`currentBid`dateOpened`closingDate`open");
+
+        for (int i = 0; i < nextAuctionSlot; i++) {
+            if (auctions[i] != null) {
+                auctionWriter.println(
+                    auctions[i][0] + "`" +
+                    auctions[i][1] + "`" +
+                    auctions[i][2] + "`" +
+                    auctions[i][3] + "`" +
+                    auctions[i][4] + "`" +
+                    auctions[i][5]
+                );
+            }
+        }
+
+        auctionWriter.close();
+
         System.out.println("Data saved. Goodbye!");
+
+    } catch (FileNotFoundException ex) {
+        System.out.println("Error saving data!");
     }
+}
 
     // Helper function to generate reports for the ADmin
     public static void generateReport() {
