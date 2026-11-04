@@ -6,15 +6,14 @@ import java.io.*;   // for Java File I/O
  * @date 10/24/2026
  * @purpose This is a console-based prototype of an auctioneering system
  * @disclaimer 
- *  * To-do List:
- * - create objects
+ * To-do List:
+ * - create objects - Dorian
  * - update arrays, and change all things that are dependent on them by making objects
- *      - creation of objects, array lists, and updating related code - dorian
- * - provide menu option for amortization
- * - a whole lot of if statements with binary logic for amortization
- * - new menu option for auction sales lead
- * - fourth option alongside the 3 users for auction sales lead - mason
- * - figure out how we can make amortization feel logical
+ *      - creation of objects, array lists, and updating related code - Dorian
+ * - provide menu option for amortization & implement logic from Amortization.java - Laura
+ * - Implement Part 2 feedback - Daniel 
+ * - fourth option alongside the 3 users for auction sales lead - Mason
+ * - figure out how we can make amortization feel logical - Tyler, Qiu, Yuyao
  */
 public class Prototype {
     public static Scanner userInput = new Scanner(System.in);
