@@ -5,7 +5,7 @@ import java.io.*;   // for Java File I/O
  * @authors Dorian Crawford, Laura Elmore, Daniel Haddadin, Mason Noufal, Tyler Ryu, Qiuxuan Xiong, Yuyao Yang
  * @date 10/24/2026
  * @purpose This is a console-based prototype of an auctioneering system
- * @disclaimer
+ * @disclaimer HI 
  */
 public class Prototype {
     public static Scanner userInput = new Scanner(System.in);
