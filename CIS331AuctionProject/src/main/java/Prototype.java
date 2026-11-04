@@ -5,16 +5,7 @@ import java.io.*;   // for Java File I/O
  * @authors Dorian Crawford, Laura Elmore, Daniel Haddadin, Mason Noufal, Tyler Ryu, Qiuxuan Xiong, Yuyao Yang
  * @date 10/24/2026
  * @purpose This is a console-based prototype of an auctioneering system
- * @disclaimer HI 
- * To-do List:
- * - create objects
- * - update arrays, and change all things that are dependent on them by making objects
- *      - creation of objects, array lists, and updating related code - dorian
- * - provide menu option for amortization
- * - a whole lot of if statements with binary logic for amortization
- * - new menu option for auction sales lead
- * - fourth option alongside the 3 users for auction sales lead - mason
- * - figure out how we can make amortization feel logical
+ * @disclaimer 
  */
 public class Prototype {
     public static Scanner userInput = new Scanner(System.in);
