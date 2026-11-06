@@ -12,10 +12,10 @@ public class User {
     private PaymentPlan paymentPlan; // null until payment info is entered
 
 //Constructor
-public User(int userID, String userName, PaymentPlan paymentPlan) {
-        this.userID = userID;
-        this.userName = userName;
-        this.paymentPlan = paymentPlan;
+    public User(int userID, String userName, PaymentPlan paymentPlan) {
+            this.userID = userID;
+            this.userName = userName;
+            this.paymentPlan = paymentPlan;
     }
 
 // Getters
