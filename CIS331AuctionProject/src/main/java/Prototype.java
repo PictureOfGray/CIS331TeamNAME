@@ -1,9 +1,9 @@
-import java.util.*; // to use Scanner
+import java.util.*; // to use Scanner & ArrayLists
 import java.io.*;   // for Java File I/O
 
 /**
  * @authors Dorian Crawford, Laura Elmore, Daniel Haddadin, Mason Noufal, Tyler Ryu, Qiuxuan Xiong, Yuyao Yang
- * @date 10/24/2026
+ * @date 11/8/2026
  * @purpose This is a console-based prototype of an auctioneering system
  * @disclaimer 
  * To-do List:
@@ -23,10 +23,10 @@ public class Prototype {
     
     
     // items structure: [item id, item name, item decr]
-    public static String[][] items = new String[256][3];
+    public static ArrayList<Item> items = new ArrayList<>();
     public static int nextItemSlot = 0;
     // auctions structure: [auction id, item id, current bid, date opnened, closing date, open (should be bool)]
-    public static String[][] auctions = new String[256][6];
+    public static ArrayList<Auction> auctions = new ArrayList<>();
     public static int nextAuctionSlot = 0;
 
 
@@ -104,7 +104,7 @@ public class Prototype {
                             
                             if (selectedIndex >= 0 &&
                                 selectedIndex < nextItemSlot &&
-                                items[selectedIndex] != null) {
+                                items.get(selectedIndex) != null) {
                                 break;
                             }
                         } else {
@@ -137,7 +137,7 @@ public class Prototype {
                             
                             if (selectedItem >= 0 &&
                                 selectedItem < nextItemSlot &&
-                                items[selectedItem] != null) {
+                                items.get(selectedItem) != null) {
                                 break;
                             }
                         } else {
@@ -196,17 +196,18 @@ public class Prototype {
                         System.out.println("Date cannot be blank!");
                     }
 
-                    auctions[nextAuctionSlot] = new String[] {
-                        String.valueOf(nextAuctionSlot), // auction id
-                        items[selectedItem][0],          // item id
-                        String.valueOf(openingBid),      // opening bid
+                    auctions.set(nextAuctionSlot, new Auction(
+                        nextAuctionSlot, // auction id
+                        items.get(selectedItem).getItemID(),          // item id
+                        openingBid,      // opening bid
+                        -1,                       // winningBuyerID
                         openingDate,
                         closingDate,
-                        "true"                           // open?
-                    };
+                        true                           // open?
+                    ));
 
                     System.out.printf(
-                        "Auction #%s created for item '%s'.\n", auctions[nextAuctionSlot][0], items[selectedItem][1]
+                        "Auction #%s created for item '%s'.\n", auctions.get(nextAuctionSlot).getAuctionID(), items.get(selectedItem).getItemName()
                     );
 
                     nextAuctionSlot++;
@@ -242,14 +243,18 @@ public class Prototype {
                 case 2 -> { // place bid on item
                     System.out.println("Here are all the open auctions:");
                     for (int i = 0; i < nextAuctionSlot; i++) {
-                        if (auctions[i][5].equals("true")) {
-                            System.out.printf("AUCTION # %s:\n", auctions[i][0]);
-                            System.out.printf("--ITEM: %s\n", items[Integer.parseInt(auctions[i][1])][1]);
-                            System.out.printf("--DESCRIPTION: %s\n", items[Integer.parseInt(auctions[i][1])][2]);
-                            System.out.printf("--CLOSING DATE: %s\n", auctions[i][4]);
-                            System.out.printf("--CURRENT HIGHEST BID: %s\n", auctions[i][2]);
+                        Auction auction = auctions.get(i);
+
+                        if (auction.getClosedStatus()) {
+                            Item item = items.get(auction.getItemID());
+
+                            System.out.printf("AUCTION # %d:\n", auction.getAuctionID());
+                            System.out.printf("--ITEM: %s\n", item.getItemName());
+                            System.out.printf("--DESCRIPTION: %s\n", item.getItemDescr());
+                            System.out.printf("--CLOSING DATE: %s\n", auction.getClosingDate());
+                            System.out.printf("--CURRENT HIGHEST BID: %.2f\n", auction.getCurrentBid());
                             System.out.println();
-                        }   
+                        }
                     }
                     
                     System.out.println("Which item do you want to bid on?\n Input id: ");
@@ -268,8 +273,8 @@ public class Prototype {
                             
                             if (selectedIndex >= 0 &&
                                 selectedIndex < nextAuctionSlot &&
-                                auctions[selectedIndex] != null &&
-                                auctions[selectedIndex][5].equals("true")) {
+                                auctions.get(selectedIndex) != null &&
+                                auctions.get(selectedIndex).getClosedStatus()) {
                                 break;
                             }
                         } else {
@@ -290,8 +295,9 @@ public class Prototype {
                             userBid = userInput.nextDouble();
 
                             if (userBid > 0) {
-                                if (userBid > Double.parseDouble(auctions[selectedIndex][2])) {
-                                    auctions[selectedIndex][2] = String.valueOf(userBid);
+                                if (userBid > auctions.get(selectedIndex).getCurrentBid()) {
+                                    auctions.get(selectedIndex).setCurrentBid(userBid);
+                                    auctions.get(selectedIndex).setWinningBuyerID(0); // TODO
                                     break;
                                 } else { // bid is a double but less than current bid
                                     System.out.println("Please place a higher bid: ");
@@ -333,14 +339,18 @@ public class Prototype {
                     // display all open auctions
                     System.out.println("Here are all the open auctions:");
                     for (int i = 0; i < nextAuctionSlot; i++) {
-                        if (auctions[i][5].equals("true")) {
-                            System.out.printf("AUCTION # %s:\n", auctions[i][0]);
-                            System.out.printf("--ITEM: %s\n", items[Integer.parseInt(auctions[i][1])][1]);
-                            System.out.printf("--DESCRIPTION: %s\n", items[Integer.parseInt(auctions[i][1])][2]);
-                            System.out.printf("--CLOSING DATE: %s\n", auctions[i][4]);
-                            System.out.printf("--CURRENT HIGHEST BID: %s\n", auctions[i][2]);
+                        Auction auction = auctions.get(i);
+
+                        if (auction.getClosedStatus()) {
+                            Item item = items.get(auction.getItemID());
+
+                            System.out.printf("AUCTION # %d:\n", auction.getAuctionID());
+                            System.out.printf("--ITEM: %s\n", item.getItemName());
+                            System.out.printf("--DESCRIPTION: %s\n", item.getItemDescr());
+                            System.out.printf("--CLOSING DATE: %s\n", auction.getClosingDate());
+                            System.out.printf("--CURRENT HIGHEST BID: %.2f\n", auction.getCurrentBid());
                             System.out.println();
-                        }   
+                        }
                     }
 
                     int selectedAuction = -1;
@@ -357,8 +367,8 @@ public class Prototype {
                             
                             if (selectedAuction >= 0 &&
                                 selectedAuction < nextAuctionSlot &&
-                                auctions[selectedAuction] != null &&
-                                auctions[selectedAuction][5].equals("true")) {
+                                auctions.get(selectedAuction) != null &&
+                                auctions.get(selectedAuction).getClosedStatus()) {
                                 break;
                             }
                         } else {
@@ -371,7 +381,7 @@ public class Prototype {
                         break;
                     }
 
-                    auctions[selectedAuction][5] = "false"; // change open field to false, i.e., closed
+                    auctions.get(selectedAuction).setOpen(false); // change open field to false, i.e., closed
 
                     System.out.printf("Auction #%d has been closed!\n", selectedAuction);
                 }
@@ -393,7 +403,7 @@ public class Prototype {
                             
                             if (selectedIndex >= 0 &&
                                 selectedIndex < nextItemSlot &&
-                                items[selectedIndex] != null) {
+                                items.get(selectedIndex) != null) {
                                 break;
                             }
                         } else {
@@ -435,20 +445,19 @@ public class Prototype {
                 String[] itemInfo = row.split("`"); // split the CSV line into its parts
                 
                 int itemIndex = Integer.parseInt(itemInfo[0]); // yeah the index is based off the id and that's bad but w/e
-                if (itemIndex >= items.length) { // if we have 256 items already, don't load the next one
+                if (itemIndex >= items.size()) { // if we have 256 items already, don't load the next one
                     System.out.println("Max number of items loaded!");
                     break;
                 }
-                
-                items[itemIndex][0] = itemInfo[0]; // item ID
-                items[itemIndex][1] = itemInfo[1]; // item name
-                items[itemIndex][2] = itemInfo[2]; // item description
+                items.add(itemIndex, new Item (
+                   Integer.parseInt(itemInfo[0]),
+                   itemInfo[1],
+                   itemInfo[2]
+                ));
                 nextItemSlot++;
             }
         } catch (FileNotFoundException ex) {
             System.out.println("items.csv not found. Starting with no items.");
-
-            items = new String[256][3];
             nextItemSlot = 0;
         }
         
@@ -464,23 +473,24 @@ public class Prototype {
                 String[] auctionInfo = row.split("`"); // split the CSV line into its parts
                 int auctionIndex = Integer.parseInt(auctionInfo[0]); // yeah the index is based off the id and that's bad but w/e
 
-                if (auctionIndex >= items.length) {
+                if (auctionIndex >= auctions.size()) {
                     System.out.println("Max number of auctions loaded!");
                     break;
                 }
-
-                auctions[auctionIndex][0] = auctionInfo[0]; // auction ID
-                auctions[auctionIndex][1] = auctionInfo[1]; // item ID
-                auctions[auctionIndex][2] = auctionInfo[2]; // current bid
-                auctions[auctionIndex][3] = auctionInfo[3]; // date opened
-                auctions[auctionIndex][4] = auctionInfo[4]; // closing date
-                auctions[auctionIndex][5] = auctionInfo[5]; // open (true/false)
+                
+                auctions.add(auctionIndex, new Auction (
+                   Integer.parseInt(auctionInfo[0]),
+                   Integer.parseInt(auctionInfo[1]),
+                   Double.parseDouble(auctionInfo[2]),
+                   Integer.parseInt(auctionInfo[3]),
+                   auctionInfo[4],
+                   auctionInfo[5],
+                   Boolean.parseBoolean(auctionInfo[6])
+                ));
                 nextAuctionSlot++;
             }
         } catch (FileNotFoundException ex) {
             System.out.println("auctions.csv not found. Starting with no auctions.");
-
-            auctions = new String[256][6];
             nextAuctionSlot = 0;
         }
         
@@ -500,11 +510,11 @@ public class Prototype {
         itemWriter.println("itemID`itemName`itemDescr");
 
         for (int i = 0; i < nextItemSlot; i++) {
-            if (items[i] != null) {
+            if (items.get(i) != null) {
                 itemWriter.println(
-                    items[i][0] + "`" +
-                    items[i][1] + "`" +
-                    items[i][2]
+                    items.get(i).getItemID() + "`" +
+                    items.get(i).getItemName() + "`" +
+                    items.get(i).getItemDescr()
                 );
             }
         }
@@ -518,14 +528,15 @@ public class Prototype {
         auctionWriter.println("auctionID`itemID`currentBid`dateOpened`closingDate`open");
 
         for (int i = 0; i < nextAuctionSlot; i++) {
-            if (auctions[i] != null) {
+            if (auctions.get(i) != null) {
                 auctionWriter.println(
-                    auctions[i][0] + "`" +
-                    auctions[i][1] + "`" +
-                    auctions[i][2] + "`" +
-                    auctions[i][3] + "`" +
-                    auctions[i][4] + "`" +
-                    auctions[i][5]
+                    auctions.get(i).getAuctionID() + "`" +
+                    auctions.get(i).getItemID() + "`" +
+                    auctions.get(i).getCurrentBid() + "`" +
+                    auctions.get(i).getWinningBuyerID() + "`" +
+                    auctions.get(i).getDateOpened() + "`" +
+                    auctions.get(i).getClosingDate() + "`" +
+                    auctions.get(i).getClosedStatus()
                 );
             }
         }
@@ -556,16 +567,17 @@ public class Prototype {
                 System.out.println("\nLIVE AUCTIONS REPORT");
                 
                 for (int i = 0; i < nextAuctionSlot; i++) {
+                        Auction auction = auctions.get(i);
+                        if (auction.getClosedStatus()) {
+                            Item item = items.get(auction.getItemID());
 
-                    if (auctions[i] != null && auctions[i][5].equals("true")) { // open auctions only
-                        System.out.printf("AUCTION # %s:\n", auctions[i][0]);
-                        System.out.printf("--Item: %s\n", items[Integer.parseInt(auctions[i][1])][1]);
-                        System.out.printf("--Description: %s\n", items[Integer.parseInt(auctions[i][1])][2]);
-                        System.out.printf("--Current Highest Bid: %s\n", auctions[i][2]);
-                        System.out.printf("--Date Opened: %s\n", auctions[i][3]);
-                        System.out.printf("--Closing Date: %s\n", auctions[i][4]);
-                        System.out.println();
-                    }
+                            System.out.printf("AUCTION # %d:\n", auction.getAuctionID());
+                            System.out.printf("--ITEM: %s\n", item.getItemName());
+                            System.out.printf("--DESCRIPTION: %s\n", item.getItemDescr());
+                            System.out.printf("--CLOSING DATE: %s\n", auction.getClosingDate());
+                            System.out.printf("--CURRENT HIGHEST BID: %.2f\n", auction.getCurrentBid());
+                            System.out.println();
+                        }
                 }
                 System.out.println();
             }
@@ -590,14 +602,14 @@ public class Prototype {
                 System.out.printf("\nITEMS FOR SALE ($%.2f AND UP)\n", minimumPrice);
 
                 for (int i = 0; i < nextAuctionSlot; i++) {
-                    if (auctions[i] != null && auctions[i][5].equals("true")) {
+                    if (auctions.get(i) != null && auctions.get(i).getClosedStatus()) {
 
-                        double price = Double.parseDouble(auctions[i][2]);
+                        double price = auctions.get(i).getCurrentBid();
 
                         if (price >= minimumPrice) {
                             System.out.printf( "Auction #%s | %s | Current Bid: $%.2f\n",
-                                auctions[i][0],
-                                items[Integer.parseInt(auctions[i][1])][1],
+                                auctions.get(i).getAuctionID(),
+                                items.get(auctions.get(i).getItemID()).getItemName(),
                                 price
                             );
                         }
@@ -612,9 +624,9 @@ public class Prototype {
 
                 // add auctions' prices to respective bins
                 for (int i = 0; i < nextAuctionSlot; i++) {
-                    if (auctions[i] != null && auctions[i][5].equals("true")) {
+                    if (auctions.get(i) != null && auctions.get(i).getClosedStatus()) {
 
-                        double price = Double.parseDouble(auctions[i][2]);
+                        double price = auctions.get(i).getCurrentBid();
 
                         if (price <= 5) {
                             bins[0]++;
@@ -695,7 +707,11 @@ public class Prototype {
         System.out.println("What is the description of your item? ");
         String itemDescr = userInput.nextLine();
         
-        items[itemIndex] = new String[] {String.valueOf(itemIndex), itemName, itemDescr};
+        items.add(itemIndex, new Item (
+                itemIndex,
+                itemName,
+                itemDescr
+        ));
     }
     
     // Helper function used to display all items
@@ -703,8 +719,9 @@ public class Prototype {
         System.out.println("Here are all the items:");
         int i = 0;
  
-        while (i < items.length && items[i][0] != null) {
-            System.out.printf("ITEM ID %s, %s: %s\n", items[i][0], items[i][1], items[i][2]);
+        while (i < items.size() && items.get(i) != null) {
+            System.out.printf("ITEM ID %s, %s: %s\n", 
+                    items.get(i).getItemID(), items.get(i).getItemName(), items.get(i).getItemDescr());
             System.out.println();
             i++;
         }
