@@ -20,15 +20,14 @@ public class Prototype {
     public static int intent = -1;
     
     // Declare class variables for use throughout the program
-    
-    
-    // items structure: [item id, item name, item decr]
     public static ArrayList<Item> items = new ArrayList<>();
     public static int nextItemSlot = 0;
-    // auctions structure: [auction id, item id, current bid, date opnened, closing date, open (should be bool)]
+    
     public static ArrayList<Auction> auctions = new ArrayList<>();
     public static int nextAuctionSlot = 0;
+    
     public static ArrayList<User> users = new ArrayList<>();
+    public static ArrayList<PotentialSeller> potentialSellers = new ArrayList<>();
 
 
     public static void main(String[] args) {
@@ -62,8 +61,8 @@ public class Prototype {
     * Function to give the user the choice of which role they want to be (Seller, Buyer, or Admin)
     */
     public static int login() {
-        System.out.println("What type of user are you?\n 1 = Seller, 2 = Buyer, 3 = Admin. Enter 0 to exit: ");
-        return getValidatedInt(0, 3, "Invalid input!\n Input 0 to exit, 1 for Seller, 2 for Buyer, or 3 for Admin: ");
+        System.out.println("What type of user are you?\n 1 = Seller, 2 = Buyer, 3 = Admin, 4 = Refer Potential Seller. Enter 0 to exit: ");
+        return getValidatedInt(0, 3, "Invalid input!\n Input 0 to exit, 1 for Seller, 2 for Buyer, 3 for Admin, or 4 to Refer Potential Seller: ");
     }
 
     
