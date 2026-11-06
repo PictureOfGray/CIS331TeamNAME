@@ -28,6 +28,7 @@ public class Prototype {
     // auctions structure: [auction id, item id, current bid, date opnened, closing date, open (should be bool)]
     public static ArrayList<Auction> auctions = new ArrayList<>();
     public static int nextAuctionSlot = 0;
+    public static ArrayList<User> users = new ArrayList<>();
 
 
     public static void main(String[] args) {
@@ -190,13 +191,14 @@ public class Prototype {
                         closingDate = userInput.nextLine().trim();
 
                         if (!openingDate.isEmpty()) {
-                            break;
+    
+           break;
                         }
                         // if input is blank, print this:
                         System.out.println("Date cannot be blank!");
                     }
 
-                    auctions.set(nextAuctionSlot, new Auction(
+                     auctions.add(new Auction(
                         nextAuctionSlot, // auction id
                         items.get(selectedItem).getItemID(),          // item id
                         openingBid,      // opening bid
@@ -233,8 +235,8 @@ public class Prototype {
         
         // this whole workflow is in a while loop so the buyer can keep doing buyer things after selecting
         while (intent > 0 || intent == -1) {
-            System.out.println("Welcome, Buyer! What do you want to do?\n Input 1 to browse items, 2 to place a bid on an item. Enter 0 to logout: ");
-            intent = getValidatedInt(0, 2, "Invalid input!\n Enter 1 to browse items, 2 to place a bid, or 0 to logout: ");
+            System.out.println("Welcome, Buyer! What do you want to do?\n Input 1 to browse items, 2 to place a bid on an item, 3 for payment plans & amortization tables. Enter 0 to logout: ");
+            intent = getValidatedInt(0, 3, "Invalid input!\n Enter 1 to browse items, 2 to place a bid, 3 for payment plans, or 0 to logout: ");
 
             switch (intent) { // handles which action the buyer inputs
                 case 1 -> { // browse items
@@ -287,6 +289,13 @@ public class Prototype {
                         break;
                     }
                     
+                    // record which user is bidding so the auction can be tied to their payment plan
+                    System.out.println("Which user is placing this bid?");
+                    int biddingUser = selectUser();
+                    if (biddingUser == -1) {
+                        System.out.println("Bid cancelled.");
+                        break;
+                    }
                     
                     System.out.println("What is your bid? ");
                     double userBid;
@@ -297,7 +306,7 @@ public class Prototype {
                             if (userBid > 0) {
                                 if (userBid > auctions.get(selectedIndex).getCurrentBid()) {
                                     auctions.get(selectedIndex).setCurrentBid(userBid);
-                                    auctions.get(selectedIndex).setWinningBuyerID(0); // TODO
+                                    auctions.get(selectedIndex).setWinningBuyerID(users.get(biddingUser).getUserID()); 
                                     break;
                                 } else { // bid is a double but less than current bid
                                     System.out.println("Please place a higher bid: ");
@@ -311,6 +320,10 @@ public class Prototype {
                     }
                     System.out.println("Bid placed!");
                     
+                }
+                
+                case 3 -> { // payment plans & amortization
+                    paymentMenu();
                 }
                 case 0 -> { // exit
                     return;
@@ -331,8 +344,8 @@ public class Prototype {
         
         // this whole workflow is in a while loop so the admin can keep doing admin things after an action
         while (intent > 0 || intent == -1) {
-            System.out.println("Welcome, Admin! What do you want to do?\n Input 1 to close a sale early, 2 to edit an existing item, 3 to run reports. Enter 0 to logout: ");
-            intent = getValidatedInt(0, 3, "Invalid input!\n Enter 1 to close a sale early, 2 to edit existing items, 3 to run reports, or 0 to logout: ");
+            System.out.println("Welcome, Admin! What do you want to do?\n Input 1 to close a sale early, 2 to edit an existing item, 3 to run reports, 4 for user payment plans & amortization tables. Enter 0 to logout: ");
+            intent = getValidatedInt(0, 4, "Invalid input!\n Enter 1 to close a sale early, 2 to edit existing items, 3 to run reports, 4 for payment plans, or 0 to logout: ");
 
             switch (intent) { // looks at input and runs respective action
                 case 1 -> { // close a sale early
@@ -422,6 +435,9 @@ public class Prototype {
                 case 3 -> { // run reports
                     generateReport();
                 }
+                case 4 -> { // payment plans & amortization
+                    paymentMenu();
+                }
                 case 0 -> { // exit
                     return;
                 }
@@ -444,12 +460,8 @@ public class Prototype {
                 String row = itemsReader.nextLine();
                 String[] itemInfo = row.split("`"); // split the CSV line into its parts
                 
-                int itemIndex = Integer.parseInt(itemInfo[0]); // yeah the index is based off the id and that's bad but w/e
-                if (itemIndex >= items.size()) { // if we have 256 items already, don't load the next one
-                    System.out.println("Max number of items loaded!");
-                    break;
-                }
-                items.add(itemIndex, new Item (
+                
+                items.add(new Item (
                    Integer.parseInt(itemInfo[0]),
                    itemInfo[1],
                    itemInfo[2]
@@ -471,14 +483,9 @@ public class Prototype {
             while(auctionReader.hasNextLine()) {
                 String row = auctionReader.nextLine();
                 String[] auctionInfo = row.split("`"); // split the CSV line into its parts
-                int auctionIndex = Integer.parseInt(auctionInfo[0]); // yeah the index is based off the id and that's bad but w/e
-
-                if (auctionIndex >= auctions.size()) {
-                    System.out.println("Max number of auctions loaded!");
-                    break;
-                }
                 
-                auctions.add(auctionIndex, new Auction (
+                
+                auctions.add(new Auction (
                    Integer.parseInt(auctionInfo[0]),
                    Integer.parseInt(auctionInfo[1]),
                    Double.parseDouble(auctionInfo[2]),
@@ -494,6 +501,35 @@ public class Prototype {
             nextAuctionSlot = 0;
         }
         
+        // Read users.csv: userID`userName`hasPlan`auctionID`price`annualRate`months`extraPayment
+        try {
+            Scanner userReader = new Scanner(new File("src/main/java/users.csv"));
+            if (userReader.hasNextLine()) {
+                userReader.nextLine(); // eat header row
+            }
+
+            while (userReader.hasNextLine()) {
+                String row = userReader.nextLine();
+                if (row.isBlank()) {
+                    continue;
+                }
+                String[] userInfo = row.split("`");
+
+                PaymentPlan plan = null;
+                if (Boolean.parseBoolean(userInfo[2])) {
+                    plan = new PaymentPlan(
+                        Integer.parseInt(userInfo[3]),
+                        Double.parseDouble(userInfo[4]),
+                        Double.parseDouble(userInfo[5]),
+                        Integer.parseInt(userInfo[6]),
+                        Double.parseDouble(userInfo[7])
+                    );
+                }
+                users.add(new User(Integer.parseInt(userInfo[0]), userInfo[1], plan));
+            }
+        } catch (FileNotFoundException ex) {
+            System.out.println("users.csv not found. Starting with no users.");
+        }
         
         System.out.println("All data loaded!");
     }
@@ -525,8 +561,8 @@ public class Prototype {
         PrintWriter auctionWriter = new PrintWriter("src/main/java/auctions.csv");
 
         // Header row
-        auctionWriter.println("auctionID`itemID`currentBid`dateOpened`closingDate`open");
-
+        auctionWriter.println("auctionID`itemID`currentBid`winningBuyerID`dateOpened`closingDate`open");
+       
         for (int i = 0; i < nextAuctionSlot; i++) {
             if (auctions.get(i) != null) {
                 auctionWriter.println(
@@ -542,7 +578,24 @@ public class Prototype {
         }
 
         auctionWriter.close();
+        
+// This is for saving users.csv (users + their saved payment plans)
+        PrintWriter userWriter = new PrintWriter("src/main/java/users.csv");
+        userWriter.println("userID`userName`hasPlan`auctionID`price`annualRate`months`extraPayment");
 
+        for (User user : users) {
+            PaymentPlan plan = user.getPaymentPlan();
+            if (plan != null) {
+                userWriter.println(user.getUserID() + "`" + user.getUserName() + "`true`" +
+                    plan.getAuctionID() + "`" + plan.getPrice() + "`" + plan.getAnnualRate() + "`" +
+                    plan.getMonths() + "`" + plan.getExtraPayment());
+            } else {
+                userWriter.println(user.getUserID() + "`" + user.getUserName() + "`false`-1`0`0`0`0");
+            }
+        }
+
+        userWriter.close();
+        
         System.out.println("Data saved. Goodbye!");
 
     } catch (FileNotFoundException ex) {
@@ -726,7 +779,142 @@ public class Prototype {
             i++;
         }
     }
+    
+        // Sub-menu for payment plans & amortization (reached from Buyer and Admin menus)
+    public static void paymentMenu() {
+        while (true) {
+            System.out.println("PAYMENT PLANS\n Input 1 to add a user, 2 to run amortization tables for a user. Enter 0 to go back: ");
+            int choice = getValidatedInt(0, 2, "Invalid input!\n Enter 1 to add a user, 2 to run tables, or 0 to go back: ");
 
+            if (choice == 0) {
+                return;
+            }
+            if (choice == 1) {
+                addUser();
+                continue;
+            }
+
+            // choice 2: run tables for a user
+            int userIndex = selectUser();
+            if (userIndex == -1) {
+                continue;
+            }
+            User user = users.get(userIndex);
+
+            if (!user.hasPaymentPlan()) {                  // no saved info: enter it now
+                System.out.println("No payment info saved yet. Let's enter it.");
+                if (!enterPaymentPlan(user)) continue;
+            } else {                                        // saved info: use it or replace it
+                System.out.println("Input 1 to use saved payment info, 2 to enter new info: ");
+                int useSaved = getValidatedInt(1, 2, "Enter 1 or 2: ");
+                if (useSaved == 2 && !enterPaymentPlan(user)) continue;
+            }
+
+            Amortization.printSchedule(user);
+        }
+    }
+    // Helper function to enter (or replace) a user's payment info. Returns false if cancelled.
+    public static boolean enterPaymentPlan(User user) {
+        System.out.println("Enter the amount to finance, or -1 to cancel: ");
+        double price = getValidatedDouble(0.01, "Amount must be greater than 0 (or -1 to cancel): ");
+        if (price == -1) return false;
+
+        System.out.println("Enter the yearly interest rate as a percent (e.g. 1.5), or -1 to cancel: ");
+        double rate = getValidatedDouble(0, "Interest rate must be 0 or more (or -1 to cancel): ");
+        if (rate == -1) return false;
+
+        System.out.println("Pay over 12, 24, or 36 months? (or -1 to cancel): ");
+        int months = getValidatedInt(12, 36, "Choose 12, 24, or 36 (or -1 to cancel): ");
+        while (months != -1 && months != 12 && months != 24 && months != 36) {
+            System.out.println("Choose 12, 24, or 36 (or -1 to cancel): ");
+            months = getValidatedInt(12, 36, "Choose 12, 24, or 36 (or -1 to cancel): ");
+        }
+        if (months == -1) return false;
+
+        System.out.println("Extra to pay each month above the minimum? Enter 0 for none, or -1 to cancel: ");
+        double extra = getValidatedDouble(0, "Extra must be 0 or more (or -1 to cancel): ");
+        if (extra == -1) return false;
+
+        user.setPaymentPlan(new PaymentPlan(-1, price, rate, months, extra)); // replaces any old plan
+        System.out.println("Payment info saved for " + user.getUserName() + "!");
+        return true;
+    }
+    
+// Helper function to create a new user
+    public static void addUser() {
+        userInput.nextLine(); // eat leftover newline
+        System.out.println("Enter the new user's name, or -1 to cancel: ");
+        String name = userInput.nextLine().trim();
+        if (name.equals("-1") || name.isEmpty()) {
+            System.out.println("User creation cancelled.");
+            return;
+        }
+
+        // next ID is one past the highest existing ID
+        int newID = 0;
+        for (User user : users) {
+            if (user.getUserID() >= newID) {
+                newID = user.getUserID() + 1;
+            }
+        }
+        users.add(new User(newID, name.replace("`", "'"), null)); // no backticks, they'd break the CSV
+        System.out.printf("User #%d '%s' created!\n", newID, name);
+    }
+
+    // Helper function to display all users
+    public static void displayUsers() {
+        System.out.println("Here are all the users:");
+        for (User user : users) {
+            System.out.printf("USER ID %d, %s | Payment info saved: %s\n",
+                user.getUserID(), user.getUserName(), user.hasPaymentPlan() ? "yes" : "no");
+        }
+        System.out.println();
+    }
+
+    // Helper function: show users, ask for an ID, return that user's index in the list (or -1 to cancel)
+    public static int selectUser() {
+        if (users.isEmpty()) {
+            System.out.println("There are no users yet. Add one first.");
+            return -1;
+        }
+        displayUsers();
+
+        while (true) {
+            System.out.println("Input user ID, or -1 to cancel: ");
+            if (userInput.hasNextInt()) {
+                int id = userInput.nextInt();
+                if (id == -1) {
+                    return -1;
+                }
+                for (int i = 0; i < users.size(); i++) {
+                    if (users.get(i).getUserID() == id) {
+                        return i;
+                    }
+                }
+            } else {
+                userInput.next();
+            }
+            System.out.println("Invalid user ID!");
+        }
+    }
+    
+    public static double getValidatedDouble(double min, String errorMessage) {
+        while (true) {
+            if (userInput.hasNextDouble()) {
+                double value = userInput.nextDouble();
+                if (value == -1) {
+                    return -1;
+                }
+                if (value >= min) {
+                    return value;
+                }
+            } else {
+                userInput.next();
+            }
+            System.out.println(errorMessage);
+        }
+    }
+    
     // Helper function. User inputs something, check if it's an int within the range
     public static int getValidatedInt(int min, int max, String errorMessage) {
         while (true) {

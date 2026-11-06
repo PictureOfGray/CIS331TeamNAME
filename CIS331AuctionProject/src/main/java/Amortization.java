@@ -1,151 +1,87 @@
-
-
-import java.util.Scanner;
-
 /**
- *
- * @author Dorian Crawford
+ * @authors Dorian Crawford, Laura Elmore, Daniel Haddadin, Mason Noufal, Tyler Ryu, Qiuxuan Xiong, Yuyao Yang
+ * @date 11/8/2026
+ * @purpose This is the Class Definition File for a user's saved payment plan
+ * @disclaimer 
  */
-public class Amortization {
+public class Amortization {        
 
-    public static void main(String[] args) {
-        Amortize();
+    public static void printSchedule(User user) {
+        PaymentPlan plan = user.getPaymentPlan();
+        if (plan == null) {
+            System.out.println("This user has no payment information saved.");
+            return;
+        }
+
+        // pull everything from the saved plan instead of asking for it
+        double monthlyRate = plan.getMonthlyRate();
+        double payment = plan.getMonthlyPayment();
+        double balance = plan.getPrice();
+        double totalInterest = 0;
+        double totalPaid = 0;
+        int month = 0;
+
+        // summary at the top
+        System.out.printf("\nAMORTIZATION SCHEDULE FOR %s (USER #%d)\n", user.getUserName(), user.getUserID());
+        System.out.printf("Amount financed: $%,.2f | Interest: %.2f%% per year | Term: %d months\n",
+                plan.getPrice(), plan.getAnnualRate(), plan.getMonths());
+        System.out.printf("Minimum payment: $%,.2f | Extra per month: $%,.2f | You pay: $%,.2f/month\n\n",
+                plan.getMinimumPayment(), plan.getExtraPayment(), payment);
+
+        // keep going until it's paid off (extra payments can end it early)
+        while (balance > 0.005 && month < plan.getMonths()) {
+
+            if (month % 12 == 0) { // start of a new year block, like Part 1
+                System.out.println("-=+YEAR " + (month / 12 + 1) + "+=-");
+                System.out.printf("%-10s| %16s | %10s | %10s | %10s | %17s\n",
+                        "MONTH", "STARTING BALANCE", "INTEREST", "PRINCIPAL", "PAYMENT", "REMAINING BALANCE");
+            }
+            month++;
+
+            double startingBalance = balance;
+            double interest = startingBalance * monthlyRate;
+            double thisPayment = payment;
+
+            // last payment: just pay off what's left
+            if (thisPayment > startingBalance + interest || month == plan.getMonths()) {
+                thisPayment = startingBalance + interest;
+            }
+
+            double principal = thisPayment - interest;
+            balance = startingBalance - principal;   // only principal lowers the balance
+            if (balance < 0.005) {
+                balance = 0;
+            }
+
+            totalInterest += interest;
+            totalPaid += thisPayment;
+
+            System.out.printf("%-10s| %,16.2f | %,10.2f | %,10.2f | %,10.2f | %,17.2f\n",
+                    String.format("%2d %s", month, monthName(month)),
+                    startingBalance, interest, principal, thisPayment, balance);
+
+            if (month % 12 == 0) {
+                System.out.println(); // blank line between years
+            }
+        }
+
+        // totals at the bottom
+        System.out.printf("\nPaid off in %d months. Total paid: $%,.2f (interest: $%,.2f)\n",
+                month, totalPaid, totalInterest);
+
+        if (plan.getExtraPayment() > 0) {
+            double minimumTotal = plan.getMinimumPayment() * plan.getMonths();
+            System.out.printf("Paying extra saves %d month(s) and about $%,.2f compared with the minimum.\n",
+                    plan.getMonths() - month, minimumTotal - totalPaid);
+        }
+        System.out.println();
     }
-    
-    public static void Amortize() {
-        // COLLECT USER INPUTS
-        Scanner userInput = new Scanner(System.in);
-        
-        String itemTitle = "";
-        String description = "";
-        double price = 0.0;
-        int lengthOfPayment = 0;
-        
-        System.out.println("Welcome! Please input the name of your item: ");
-        itemTitle = userInput.nextLine();
-        
-        System.out.println("\nInput the description of your item: ");
-        description = userInput.nextLine();
-        
-        System.out.println("\nInput the price of your item: ");
-        while (!userInput.hasNextDouble()) { // ensures only doubles are entered
-            userInput.next();
-            System.out.println("\nInvalid input! Input the price of your item as just a number: ");
-        }
-        price = userInput.nextDouble();
-        
-        // This is in a loop because if the user inputs a wrong timeframe we'll prompt them again
-        System.out.println("\nDo you want to pay over 12 months, 24 months, or 36 months? Type in the respective number: ");
-        while (!userInput.hasNextInt()) { // ensures only ints are entered
-            userInput.next();
-            System.out.println("\nInvalid input! Please select 12 months, 24 months, or 36 months. Type in the respective number: ");
-        }
-        
-        int selectedTimeframe = userInput.nextInt();
-        while (selectedTimeframe != 12 && selectedTimeframe != 24 && selectedTimeframe != 36) {
-            System.out.println("Incorrect input! Please select 12 months, 24 months, or 36 months. Type in the respective number: ");
-            selectedTimeframe = userInput.nextInt();
-        }
-        lengthOfPayment = selectedTimeframe;
-        
-        System.out.println("\n");       
-        
-        // AMORTIZATION SCHEDULING LOGIC
-        int numberOfYears = lengthOfPayment / 12;
-        double interestRate = .015; //1.5%
-        double monthlyPayment = price / lengthOfPayment;
-        double amountLeft = price; // we'll be decrementing this with each month
-        
-        // amortization formula that we're using:
-        // (interest rate * price) + (price / # of months)
-        
-        // Theoretically you could iterate through and store the values in arrays,
-        // then print out the results in a grid, but semantics.
-        for (int i = 1; i <= numberOfYears; i++) {
-            System.out.println("-=+YEAR " + i + "+=-");
-            
-            System.out.print("MONTH | ");
-            System.out.print("STARTING BALANCE | ");
-            System.out.print("INTEREST | ");
-            System.out.print("MONTHLY PAYMENT | ");
-            System.out.print("TOTAL THIS MONTH\n");
-            System.out.print("REMAINING BALANCE\n");
-            
-            // amountLeft is here so we don't go into the negatives
-            for (int j = 1; j <= 12; j++) {
-            
-                double startingBalance = amountLeft;
-                double interestPayment = startingBalance * interestRate;
-                double totalDue;
-         
-                // Assume normal monthly payment
-                double currentMonthlyPayment = monthlyPayment;
-                
-                if (monthlyPayment >= startingBalance) {
-                    currentMonthlyPayment = startingBalance - interestPayment;
-                }
-                totalDue = interestPayment + currentMonthlyPayment;
-                
-                PrintMonth(j);
-                System.out.printf("%,12.2f - ", startingBalance);
-                System.out.printf("%,12.2f - ", interestPayment);
-                System.out.printf("%,12.2f = ", currentMonthlyPayment);
-                System.out.printf("%,12.2f | ", totalDue);
-                
-                amountLeft -= totalDue;
-                
-                // Guard against tiny negative values from rounding
-                if (amountLeft < 0.01) {
-                    amountLeft = 0.00;
-                }
-                System.out.printf("%,12.2f", amountLeft);
-                System.out.println();
-            }
-            
-            System.out.println();
-        }
+
+    // replaces the old PrintMonth switch: month 1 = JAN, 13 = JAN again, etc.
+    static String monthName(int month) {
+        String[] names = {"JAN", "FEB", "MAR", "APR", "MAY", "JUN",
+                          "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"};
+        return names[(month - 1) % 12];
     }
-    
-    static void PrintMonth(int month) {
-        switch (month) {
-            case 1 -> {
-                System.out.print("JAN: ");
-            }
-            case 2 -> {
-                System.out.print("FEB: ");
-            }
-            case 3 -> {
-                System.out.print("MAR: ");
-            }
-            case 4 -> {
-                System.out.print("APR: ");
-            }
-            case 5 -> {
-                System.out.print("MAY: ");
-            }
-            case 6 -> {
-                System.out.print("JUN: ");
-            }
-            case 7 -> {
-                System.out.print("JUL: ");
-            }
-            case 8 -> {
-                System.out.print("AUG: ");
-            }
-            case 9 -> {
-                System.out.print("SEP: ");
-            }
-            case 10 -> {
-                System.out.print("OCT: ");
-            }
-            case 11 -> {
-                System.out.print("NOV: ");
-            }
-            case 12 -> {
-                System.out.print("DEC: ");
-            }
-            default -> {
-            }
-        }
-    }
+
 }
