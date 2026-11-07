@@ -494,9 +494,34 @@ public class Prototype {
                 newID = lead.getPotentialSellerID() + 1;
             }
         }    
+        
+        potentiaSellers.add(new PotentiaSeller(NewID,
+        name.replace("`", "'"), phone.replace("`", "'"),
+            email.replace("`", "'"), notes.replace("`", "'"), referringUserID));
+        System.out.println("Lead #" + newID + " saved successfully!");
+            }
+    public static void viewPotentialSellersForUser() {
+        int userIndex = selectUser();
+        if (userIndex == -1) return;
+        int userID = users.get(userIndex).getUserID();
+        int count = 0;
+        for (PotentialSeller lead : potentialSellers) {
+            if (lead.getReferringUserID() == userID) {
+                printPotentialSeller(lead);
+                count++;
             }
         }
-
+    if(count=0) System.out.println("No leads for that user.");
+    
+    public static void printPotentialSeller(PotentialSeller lead) {
+        System.out.println("Lead ID: + lead.getPotentialSellerID());
+        System.out.println("Name: " + lead.getName());
+        System.out.println("Phone: " + lead.getPhoneNumber());
+        System.out.println("Email: " + lead.getEmailAddress());
+        System.out.println("Auction notes: " + lead.getNotes());
+        System.out.println("Referring user ID: " + lead.getReferringUserID());        
+               
+}
     /* Looks at auctions.csv and items.csv and loads it into memory (arrays)
     *  Files are like a CSV, except instead of a comma separating values it's a ` (backtick)
     */    
