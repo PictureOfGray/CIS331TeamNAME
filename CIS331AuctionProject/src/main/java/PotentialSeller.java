@@ -26,6 +26,9 @@ public class PotentialSeller {
     public String getName() {
         return name;
     }
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
 
     public String getNotes() {
         return notes;
