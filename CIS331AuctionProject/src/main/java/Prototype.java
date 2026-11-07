@@ -511,10 +511,10 @@ public class Prototype {
                 count++;
             }
         }
-    if(count=0) System.out.println("No leads for that user.");
+    if(count==0) System.out.println("No leads for that user.");
     
     public static void printPotentialSeller(PotentialSeller lead) {
-        System.out.println("Lead ID: + lead.getPotentialSellerID());
+        System.out.println("Lead ID: " + lead.getPotentialSellerID());
         System.out.println("Name: " + lead.getName());
         System.out.println("Phone: " + lead.getPhoneNumber());
         System.out.println("Email: " + lead.getEmailAddress());
