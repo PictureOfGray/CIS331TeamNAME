@@ -502,6 +502,7 @@ public class Prototype {
             }
     public static void viewPotentialSellersForUser() {
         int userIndex = selectUser();
+        //Exit if no user is selected
         if (userIndex == -1) return;
         int userID = users.get(userIndex).getUserID();
         int count = 0;
@@ -510,7 +511,7 @@ public class Prototype {
                 printPotentialSeller(lead);
                 count++;
             }
-        }
+        }     
     if(count==0) System.out.println("No leads for that user.");
     
     public static void printPotentialSeller(PotentialSeller lead) {
