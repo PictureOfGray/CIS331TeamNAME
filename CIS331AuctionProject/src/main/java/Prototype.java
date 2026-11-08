@@ -78,8 +78,8 @@ public class Prototype {
         
         // this whole workflow is in a while loop so the seller can keep selection actions until done
         while (intent > 0 || intent == -1) {
-            System.out.println("Welcome, Seller! What do you want to do?\n Input 1 to create an item, 2 to edit an existing item, 3 to create an auction. Enter 0 to logout: ");
-            intent = getValidatedInt(0, 3, "Invalid input!\n Enter 1 to create an item, 2 to edit an existing item, 3 to create an auction, or 0 to logout: ");
+            System.out.println("Welcome, Seller! What do you want to do?\n Input 1 to create an item, 2 to edit an existing item, 3 to create an auction. Enter 0 to return to the main menu: ");
+            intent = getValidatedInt(0, 3, "Invalid input!\n Enter 1 to create an item, 2 to edit an existing item, 3 to create an auction, or 0 to return to the main menu: ");
 
             switch (intent) { // process user choice
                 case 1 -> { // create an item
@@ -190,8 +190,7 @@ public class Prototype {
                         closingDate = userInput.nextLine().trim();
 
                         if (!openingDate.isEmpty()) {
-    
-           break;
+                            break;
                         }
                         // if input is blank, print this:
                         System.out.println("Date cannot be blank!");
@@ -234,8 +233,8 @@ public class Prototype {
         
         // this whole workflow is in a while loop so the buyer can keep doing buyer things after selecting
         while (intent > 0 || intent == -1) {
-            System.out.println("Welcome, Buyer! What do you want to do?\n Input 1 to browse items, 2 to place a bid on an item, 3 for payment plans & amortization tables. Enter 0 to logout: ");
-            intent = getValidatedInt(0, 3, "Invalid input!\n Enter 1 to browse items, 2 to place a bid, 3 for payment plans, or 0 to logout: ");
+            System.out.println("Welcome, Buyer! What do you want to do?\n Input 1 to browse items, 2 to place a bid on an item, 3 for payment plans & amortization tables. Enter 0 to return to the main menu: ");
+            intent = getValidatedInt(0, 3, "Invalid input!\n Enter 1 to browse items, 2 to place a bid, 3 for payment plans, or 0 to return to the main menu: ");
 
             switch (intent) { // handles which action the buyer inputs
                 case 1 -> { // browse items
@@ -253,7 +252,7 @@ public class Prototype {
                             System.out.printf("--ITEM: %s\n", item.getItemName());
                             System.out.printf("--DESCRIPTION: %s\n", item.getItemDescr());
                             System.out.printf("--CLOSING DATE: %s\n", auction.getClosingDate());
-                            System.out.printf("--CURRENT HIGHEST BID: %.2f\n", auction.getCurrentBid());
+                            System.out.printf("--CURRENT HIGHEST BID: $%,.2f\n", auction.getCurrentBid());
                             System.out.println();
                         }
                     }
@@ -343,8 +342,8 @@ public class Prototype {
         
         // this whole workflow is in a while loop so the admin can keep doing admin things after an action
         while (intent > 0 || intent == -1) {
-            System.out.println("Welcome, Admin! What do you want to do?\n Input 1 to close a sale early, 2 to edit an existing item, 3 to run reports, 4 for user payment plans & amortization tables. Enter 0 to logout: ");
-            intent = getValidatedInt(0, 4, "Invalid input!\n Enter 1 to close a sale early, 2 to edit existing items, 3 to run reports, 4 for payment plans, or 0 to logout: ");
+            System.out.println("Welcome, Admin! What do you want to do?\n Input 1 to close a sale early, 2 to edit an existing item, 3 to run reports, 4 for user payment plans & amortization tables. Enter 0 to return to the main menu: ");
+            intent = getValidatedInt(0, 4, "Invalid input!\n Enter 1 to close a sale early, 2 to edit existing items, 3 to run reports, 4 for payment plans, or 0 to return to the main menu: ");
 
             switch (intent) { // looks at input and runs respective action
                 case 1 -> { // close a sale early
@@ -360,7 +359,7 @@ public class Prototype {
                             System.out.printf("--ITEM: %s\n", item.getItemName());
                             System.out.printf("--DESCRIPTION: %s\n", item.getItemDescr());
                             System.out.printf("--CLOSING DATE: %s\n", auction.getClosingDate());
-                            System.out.printf("--CURRENT HIGHEST BID: %.2f\n", auction.getCurrentBid());
+                            System.out.printf("--CURRENT HIGHEST BID: $%,.2f\n", auction.getCurrentBid());
                             System.out.println();
                         }
                     }
@@ -446,10 +445,16 @@ public class Prototype {
 
     /* Looks at auctions.csv and items.csv and loads it into memory (arrays)
     *  Files are like a CSV, except instead of a comma separating values it's a ` (backtick)
+    *  Data files live at the base level of the project folder (the default place
+    *  Java file I/O looks), so the paths are just the bare file names.
     */    
     public static void loadData() {
+        // Track whether every data file was actually found so we don't falsely
+        // report "All data loaded!" when a file is missing.
+        boolean allFilesFound = true;
+
         try { // this is in a try statement in case there's an error
-            Scanner itemsReader = new Scanner(new File("src/main/java/items.csv"));
+            Scanner itemsReader = new Scanner(new File("items.csv"));
             if (itemsReader.hasNextLine()) {
                 itemsReader.nextLine(); // eat header row
             }
@@ -470,11 +475,12 @@ public class Prototype {
         } catch (FileNotFoundException ex) {
             System.out.println("items.csv not found. Starting with no items.");
             nextItemSlot = 0;
+            allFilesFound = false;
         }
         
         // Read the auctions.cs file and put it in a global array.
         try {
-            Scanner auctionReader = new Scanner(new File("src/main/java/auctions.csv"));
+            Scanner auctionReader = new Scanner(new File("auctions.csv"));
             if (auctionReader.hasNextLine()) {
                 auctionReader.nextLine(); // eat header row
             }
@@ -498,11 +504,12 @@ public class Prototype {
         } catch (FileNotFoundException ex) {
             System.out.println("auctions.csv not found. Starting with no auctions.");
             nextAuctionSlot = 0;
+            allFilesFound = false;
         }
         
         // Read users.csv: userID`userName`hasPlan`auctionID`price`annualRate`months`extraPayment
         try {
-            Scanner userReader = new Scanner(new File("src/main/java/users.csv"));
+            Scanner userReader = new Scanner(new File("users.csv"));
             if (userReader.hasNextLine()) {
                 userReader.nextLine(); // eat header row
             }
@@ -528,9 +535,14 @@ public class Prototype {
             }
         } catch (FileNotFoundException ex) {
             System.out.println("users.csv not found. Starting with no users.");
+            allFilesFound = false;
         }
         
-        System.out.println("All data loaded!");
+        if (allFilesFound) {
+            System.out.println("All data loaded!");
+        } else {
+            System.out.println("Finished loading, but one or more data files were missing (see messages above). Loaded what was available.");
+        }
     }
     
     /* Overwrites both auctions.csv and items.csv with everything currently in memory
@@ -539,7 +551,7 @@ public class Prototype {
     public static void saveData() {
     try { // this is in a try in case there's a file exception
         // This is for saving items.csv
-        PrintWriter itemWriter = new PrintWriter("src/main/java/items.csv");
+        PrintWriter itemWriter = new PrintWriter("items.csv");
 
         // Header row because we're still pretending to have CSVs
         itemWriter.println("itemID`itemName`itemDescr");
@@ -557,7 +569,7 @@ public class Prototype {
         itemWriter.close();
 
         // This is for saving auctions.csv
-        PrintWriter auctionWriter = new PrintWriter("src/main/java/auctions.csv");
+        PrintWriter auctionWriter = new PrintWriter("auctions.csv");
 
         // Header row
         auctionWriter.println("auctionID`itemID`currentBid`winningBuyerID`dateOpened`closingDate`open");
@@ -579,7 +591,7 @@ public class Prototype {
         auctionWriter.close();
         
 // This is for saving users.csv (users + their saved payment plans)
-        PrintWriter userWriter = new PrintWriter("src/main/java/users.csv");
+        PrintWriter userWriter = new PrintWriter("users.csv");
         userWriter.println("userID`userName`hasPlan`auctionID`price`annualRate`months`extraPayment");
 
         for (User user : users) {
@@ -627,7 +639,7 @@ public class Prototype {
                             System.out.printf("--ITEM: %s\n", item.getItemName());
                             System.out.printf("--DESCRIPTION: %s\n", item.getItemDescr());
                             System.out.printf("--CLOSING DATE: %s\n", auction.getClosingDate());
-                            System.out.printf("--CURRENT HIGHEST BID: %.2f\n", auction.getCurrentBid());
+                            System.out.printf("--CURRENT HIGHEST BID: $%,.2f\n", auction.getCurrentBid());
                             System.out.println();
                         }
                 }
@@ -651,7 +663,7 @@ public class Prototype {
                     System.out.println("Please enter a valid non-negative price:");
                 }
 
-                System.out.printf("\nITEMS FOR SALE ($%.2f AND UP)\n", minimumPrice);
+                System.out.printf("\nITEMS FOR SALE ($%,.2f AND UP)\n", minimumPrice);
 
                 for (int i = 0; i < nextAuctionSlot; i++) {
                     if (auctions.get(i) != null && auctions.get(i).getClosedStatus()) {
@@ -659,7 +671,7 @@ public class Prototype {
                         double price = auctions.get(i).getCurrentBid();
 
                         if (price >= minimumPrice) {
-                            System.out.printf( "Auction #%s | %s | Current Bid: $%.2f\n",
+                            System.out.printf( "Auction #%s | %s | Current Bid: $%,.2f\n",
                                 auctions.get(i).getAuctionID(),
                                 items.get(auctions.get(i).getItemID()).getItemName(),
                                 price
