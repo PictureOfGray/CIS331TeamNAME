@@ -813,31 +813,146 @@ public class Prototype {
         }
     }
     // Helper function to enter (or replace) a user's payment info. Returns false if cancelled.
-    public static boolean enterPaymentPlan(User user) {
-        System.out.println("Enter the amount to finance, or -1 to cancel: ");
-        double price = getValidatedDouble(0.01, "Amount must be greater than 0 (or -1 to cancel): ");
-        if (price == -1) return false;
+    
+public static boolean enterPaymentPlan(User user) {
 
-        System.out.println("Enter the yearly interest rate as a percent (e.g. 1.5), or -1 to cancel: ");
-        double rate = getValidatedDouble(0, "Interest rate must be 0 or more (or -1 to cancel): ");
-        if (rate == -1) return false;
+    int auctionID = -1;
+    double price;
 
-        System.out.println("Pay over 12, 24, or 36 months? (or -1 to cancel): ");
-        int months = getValidatedInt(12, 36, "Choose 12, 24, or 36 (or -1 to cancel): ");
-        while (months != -1 && months != 12 && months != 24 && months != 36) {
-            System.out.println("Choose 12, 24, or 36 (or -1 to cancel): ");
-            months = getValidatedInt(12, 36, "Choose 12, 24, or 36 (or -1 to cancel): ");
-        }
-        if (months == -1) return false;
+    System.out.println("\nPAYMENT PLAN");
+    System.out.println("1. Enter amount manually");
+    System.out.println("2. Use an existing auction");
+    System.out.println("0. Cancel");
 
-        System.out.println("Extra to pay each month above the minimum? Enter 0 for none, or -1 to cancel: ");
-        double extra = getValidatedDouble(0, "Extra must be 0 or more (or -1 to cancel): ");
-        if (extra == -1) return false;
+    int choice = getValidatedInt(
+        0, 2, "Please enter 0, 1, or 2: "
+    );
 
-        user.setPaymentPlan(new PaymentPlan(-1, price, rate, months, extra)); // replaces any old plan
-        System.out.println("Payment info saved for " + user.getUserName() + "!");
-        return true;
+    if (choice == 0 || choice == -1) {
+        return false;
     }
+
+    if (choice == 2) {
+
+        if (auctions.isEmpty()) {
+            System.out.println("No auctions available.");
+            return false;
+        }
+
+        System.out.println("\nAvailable Auctions:");
+
+        for (Auction auction : auctions) {
+            System.out.printf(
+                "Auction ID: %d | Current Bid: $%.2f%n",
+                auction.getAuctionID(),
+                auction.getCurrentBid()
+            );
+        }
+
+        System.out.println("Enter Auction ID, or -1 to cancel:");
+
+        Auction selectedAuction = null;
+
+        while (selectedAuction == null) {
+
+            int selectedID = getValidatedInt(
+                0, Integer.MAX_VALUE,
+                "Please enter a valid Auction ID:"
+            );
+
+            if (selectedID == -1) {
+                return false;
+            }
+
+            for (Auction auction : auctions) {
+                if (auction.getAuctionID() == selectedID) {
+                    selectedAuction = auction;
+                    break;
+                }
+            }
+
+            if (selectedAuction == null) {
+                System.out.println("Auction not found. Try again:");
+            }
+        }
+
+        auctionID = selectedAuction.getAuctionID();
+        price = selectedAuction.getCurrentBid();
+
+        if (price <= 0) {
+            System.out.println("Auction price must be greater than 0.");
+            return false;
+        }
+
+        System.out.printf(
+            "Amount to finance: $%.2f%n", price
+        );
+
+    } else {
+
+        System.out.println(
+            "Enter amount to finance, or -1 to cancel:"
+        );
+
+        price = getValidatedDouble(
+            0.01, "Amount must be greater than 0:"
+        );
+
+        if (price == -1) return false;
+    }
+
+    System.out.println(
+        "Enter yearly interest rate (%), or -1 to cancel:"
+    );
+
+    double rate = getValidatedDouble(
+        0, "Interest rate must be 0 or more:"
+    );
+
+    if (rate == -1) return false;
+
+    System.out.println(
+        "Pay over 12, 24, or 36 months? (-1 to cancel)"
+    );
+
+    int months = getValidatedInt(
+        12, 36, "Choose 12, 24, or 36:"
+    );
+
+    while (months != -1 &&
+           months != 12 &&
+           months != 24 &&
+           months != 36) {
+
+        System.out.println("Choose 12, 24, or 36:");
+        months = getValidatedInt(
+            12, 36, "Invalid number of months:"
+        );
+    }
+
+    if (months == -1) return false;
+
+    System.out.println(
+        "Extra monthly payment? Enter 0 for none:"
+    );
+
+    double extra = getValidatedDouble(
+        0, "Extra payment must be 0 or more:"
+    );
+
+    if (extra == -1) return false;
+
+    user.setPaymentPlan(
+        new PaymentPlan(auctionID, price, rate, months, extra)
+    );
+
+    System.out.println(
+        "Payment info saved for " + user.getUserName() + "!"
+    );
+
+    return true;
+}
+
     
 // Helper function to create a new user
     public static void addUser() {
