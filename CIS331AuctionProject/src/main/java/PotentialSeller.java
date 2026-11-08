@@ -29,7 +29,7 @@ public class PotentialSeller {
     public String getPhoneNumber() {
         return phoneNumber;
     }
-
+   
     public String getNotes() {
         return notes;
     }
