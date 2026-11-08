@@ -10,13 +10,15 @@ public class PotentialSeller {
     private String phoneNumber;
     private String emailAddress;
     private String notes;
+    private int referringUserID;
 
-    public PotentialSeller(int potentialSellerID, String name, String phoneNumber, String emailAddress, String notes) {
+    public PotentialSeller(int potentialSellerID, String name, String phoneNumber, String emailAddress, String notes, int referringUserID) {
         this.potentialSellerID = potentialSellerID;
         this.name = name;
         this.phoneNumber = phoneNumber;
         this.emailAddress = emailAddress;
         this.notes = notes;
+        this.referringUserID = referringUserID;
     }
 
     public int getPotentialSellerID() {
@@ -29,7 +31,9 @@ public class PotentialSeller {
     public String getPhoneNumber() {
         return phoneNumber;
     }
-   
+   public int getReferringUserID() {
+       return referringUserID;
+   }
     public String getNotes() {
         return notes;
     }

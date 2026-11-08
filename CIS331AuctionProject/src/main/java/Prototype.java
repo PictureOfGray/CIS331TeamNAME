@@ -448,6 +448,7 @@ public class Prototype {
     
     
     //Actual sales lead management(option 4 during login)
+    //QUESTION Should we make only admins be able to see potential seller leads
     public static void potentialSellerMenu() {
         while (true){
             System.out.println("\nPOTENTIAL SELLER LEADS");
@@ -464,9 +465,9 @@ public class Prototype {
             } 
         }
     }
-    
+    //QUESTION Should we let users add new referring user from this menu too?
     public static void addPotentialSeller() {
-        int userIndex = selectUser;
+        int userIndex = selectUser();
         if (userIndex == -1) {
             System.out.println("Lead creation cancelled. Add a user first if needed.");
             return;
@@ -485,7 +486,7 @@ public class Prototype {
         System.out.println("Email address:");
         String email = userInput.nextLine().trim();
         System.out.println("Notes about possible auction items:");
-        String notes = = userInput.nextLine().trim();
+        String notes  = userInput.nextLine().trim();
         
         
         int newID = 1;
@@ -495,7 +496,7 @@ public class Prototype {
             }
         }    
         
-        potentiaSellers.add(new PotentiaSeller(NewID,
+        potentialSellers.add(new PotentialSeller(newID,
         name.replace("`", "'"), phone.replace("`", "'"),
             email.replace("`", "'"), notes.replace("`", "'"), referringUserID));
         System.out.println("Lead #" + newID + " saved successfully!");
@@ -503,25 +504,42 @@ public class Prototype {
     public static void viewPotentialSellersForUser() {
         int userIndex = selectUser();
         //Exit if no user is selected
-        if (userIndex == -1) return;
+        if (userIndex == -1) { 
+            return;
+        }
         int userID = users.get(userIndex).getUserID();
         int count = 0;
+        
         for (PotentialSeller lead : potentialSellers) {
             if (lead.getReferringUserID() == userID) {
                 printPotentialSeller(lead);
                 count++;
             }
         }     
-    if(count==0) System.out.println("No leads for that user.");
-    
+    if(count==0){
+        System.out.println("No leads for that user.");
+    }
+}    
     public static void printPotentialSeller(PotentialSeller lead) {
         System.out.println("Lead ID: " + lead.getPotentialSellerID());
         System.out.println("Name: " + lead.getName());
         System.out.println("Phone: " + lead.getPhoneNumber());
         System.out.println("Email: " + lead.getEmailAddress());
         System.out.println("Auction notes: " + lead.getNotes());
-        System.out.println("Referring user ID: " + lead.getReferringUserID());        
-               
+        System.out.println("Referring user ID: " + lead.getReferringUserID());
+    }
+    public static void viewAllPotentialSellers() {
+        if (potentialSellers.isEmpty()){
+            System.out.println("No potential sellers found.");
+            return;
+        }
+        
+        System.out.println("ALL POTENTIAL SELLER LEADS");
+        
+        for (PotentialSeller lead : potentialSellers) {
+            printPotentialSeller(lead);
+        }    
+    }           
 }
     /* Looks at auctions.csv and items.csv and loads it into memory (arrays)
     *  Files are like a CSV, except instead of a comma separating values it's a ` (backtick)
@@ -578,6 +596,39 @@ public class Prototype {
             System.out.println("auctions.csv not found. Starting with no auctions.");
             nextAuctionSlot = 0;
         }
+        
+        //Loading potential sellers
+        //Unsure of where to put the Potential Seller loading section
+        try {
+            Scanner sellerReader = new Scanner(
+        new File("src/main/java/potentialSellers.csv"));
+            //am i pulling the right file?
+            if (sellerReader.hasNextLine()) {
+                sellerReader.nextLine();
+            }
+            
+            while (sellerReader.hasNextLine()){
+                String row = sellerReader.nextLine();
+                
+            if (row.isBlank()){
+                continue;
+               
+            }    
+            
+            String[] sellerInfo = row.split("`", -1);
+            
+            if(sellerInfo.length == 6){
+               potentialSellers.add(new PotentialSeller(
+               Integer.parseInt(sellerInfo[0]),
+               sellerInfo[1],
+               sellerInfo[2],
+               sellerInfo[3],
+               sellerInfo[4],
+               Integer.parseInt(sellerInfo[5])
+                       ));
+            }
+        }
+            
         
         // Read users.csv: userID`userName`hasPlan`auctionID`price`annualRate`months`extraPayment
         try {
@@ -674,6 +725,23 @@ public class Prototype {
 
         userWriter.close();
         
+        PrintWriter sellerWriter = new PrintWriter("src/main/java/potentialSellers.csv");
+        
+        sellerWriter.println("potentialSellerID`name`phoneNumber`emailAddress`notes`referringUserID");
+       
+        for(PotentialSeller lead : potentialSellers) {
+            sellerWriter.println(
+            lead.getPotentialSellerID() + "`" +
+            lead.getName() + "`" +
+            lead.getPhoneNumber() + "`" +
+            lead.getEmailAddress() + "`" +
+            lead.getNotes() + "`" +
+            lead.getReferringUserID()
+                    //Where do i put the ;, at the end of the paranthese or referring user id?
+    )
+}
+
+sellerWriter.close();        
         System.out.println("Data saved. Goodbye!");
 
     } catch (FileNotFoundException ex) {
