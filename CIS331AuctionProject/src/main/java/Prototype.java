@@ -38,10 +38,12 @@ public class Prototype {
         while (loop) { // infinite loop allows us to logout of a role and keep the program running
             int userType = login();
             switch (userType) {
-                case 1 -> sellerMenu();
-                case 2 -> buyerMenu();
-                case 3 -> adminMenu();
-                case 4 -> potentialSellerMenu();
+                case 1 ->
+                    sellerMenu();
+                case 2 ->
+                    buyerMenu();
+                case 3 ->
+                    adminMenu();
                 case 0 -> {
                     loop = false;
                     break;
@@ -57,12 +59,12 @@ public class Prototype {
      */
     public static int login() {
         System.out.println("What type of user are you?\n 1 = Seller, 2 = Buyer, 3 = Admin, 4 = Refer Potential Seller. Enter 0 to exit: ");
-        return getValidatedInt(0, 4, "Invalid input!\n Input 0 to exit, 1 for Seller, 2 for Buyer, 3 for Admin, or 4 to Refer Potential Seller: ");
+        return getValidatedInt(0, 3, "Invalid input!\n Input 0 to exit, 1 for Seller, 2 for Buyer, 3 for Admin, or 4 to Refer Potential Seller: ");
     }
 
     /*
     * Sub-menu for Seller. Actions available to the Seller:
-    
+    * Create an item
     * Edit existing item
     * Create auction sale with 1+ items
      */
@@ -83,7 +85,7 @@ public class Prototype {
                 case 2 -> { // editing existing item
                     // display existing items
                     displayItems();
-                    
+
                     int selectedIndex = -1;
                     while (true) { // validate user input to make sure it's an int in index range
                         System.out.println("What item do you want to edit?\n Input id, or -1 to cancel: ");
@@ -315,8 +317,8 @@ public class Prototype {
                 }
 
                 case 3 -> { // payment plans & amortization
-                    paymentMenu(); 
-                }                }
+                    paymentMenu();
+                }
                 case 0 -> { // exit
                     return;
                 }
@@ -435,103 +437,7 @@ public class Prototype {
             }
         }
     }
-    
-    
-    
-    //Actual sales lead management(option 4 during login)
-    //QUESTION Should we make only admins be able to see potential seller leads
-    public static void potentialSellerMenu() {
-        while (true){
-            System.out.println("\nPOTENTIAL SELLER LEADS");
-            System.out.println("1. Add a potential seller lead");
-            System.out.println("2. View leads for a referring user");
-            System.out.println("3. View all potential seller leads");
-            System.out.println("0. Return to login");
-            int choice = getValidatedInt(0, 3, "Enter 0, 1, 2,or 3: ");
-            switch (choice) {
-                case 1 -> addPotentialSeller();
-                case 2 -> viewPotentialSellersForUser();
-                case 3 -> viewAllPotentialSellers();
-                case 0 -> {return; }
-            } 
-        }
-    }
-    //QUESTION Should we let users add new referring user from this menu too?
-    public static void addPotentialSeller() {
-        int userIndex = selectUser();
-        if (userIndex == -1) {
-            System.out.println("Lead creation cancelled. Add a user first if needed.");
-            return;
-        }
-        int referringUserID = users.get(userIndex).getUserID();
-        userInput.nextLine();
-        
-        System.out.println("Potential seller name (-1 to cancel): ");
-        String name =userInput.nextLine().trim();
-        if(name.isEmpty() || name.equals("-1")){
-            System.out.println("Lead creation cancelled.");
-            return;
-        }
-        System.out.println("Phone number:");
-        String phone = userInput.nextLine().trim();
-        System.out.println("Email address:");
-        String email = userInput.nextLine().trim();
-        System.out.println("Notes about possible auction items:");
-        String notes  = userInput.nextLine().trim();
-        
-        
-        int newID = 1;
-        for(PotentialSeller lead : potentialSellers) {
-            if (lead.getPotentialSellerID() >= newID){
-                newID = lead.getPotentialSellerID() + 1;
-            }
-        }    
-        
-        potentialSellers.add(new PotentialSeller(newID,
-        name.replace("`", "'"), phone.replace("`", "'"),
-            email.replace("`", "'"), notes.replace("`", "'"), referringUserID));
-        System.out.println("Lead #" + newID + " saved successfully!");
-            }
-    public static void viewPotentialSellersForUser() {
-        int userIndex = selectUser();
-        //Exit if no user is selected
-        if (userIndex == -1) { 
-            return;
-        }
-        int userID = users.get(userIndex).getUserID();
-        int count = 0;
-        
-        for (PotentialSeller lead : potentialSellers) {
-            if (lead.getReferringUserID() == userID) {
-                printPotentialSeller(lead);
-                count++;
-            }
-        }     
-    if(count==0){
-        System.out.println("No leads for that user.");
-    }
-}    
-    public static void printPotentialSeller(PotentialSeller lead) {
-        System.out.println("Lead ID: " + lead.getPotentialSellerID());
-        System.out.println("Name: " + lead.getName());
-        System.out.println("Phone: " + lead.getPhoneNumber());
-        System.out.println("Email: " + lead.getEmailAddress());
-        System.out.println("Auction notes: " + lead.getNotes());
-        System.out.println("Referring user ID: " + lead.getReferringUserID());
-    }
-    public static void viewAllPotentialSellers() {
-        if (potentialSellers.isEmpty()){
-            System.out.println("No potential sellers found.");
-            return;
-        }
-        
-        System.out.println("ALL POTENTIAL SELLER LEADS");
-        
-        for (PotentialSeller lead : potentialSellers) {
-            printPotentialSeller(lead);
-        }    
-    }           
-}
+
     /* Looks at auctions.csv and items.csv and loads it into memory (arrays)
     *  Files are like a CSV, except instead of a comma separating values it's a ` (backtick)
      */
@@ -585,40 +491,7 @@ public class Prototype {
             System.out.println("auctions.csv not found. Starting with no auctions.");
             nextAuctionSlot = 0;
         }
-        
-        //Loading potential sellers
-        //Unsure of where to put the Potential Seller loading section
-        try {
-            Scanner sellerReader = new Scanner(
-        new File("src/main/java/potentialSellers.csv"));
-            //am i pulling the right file?
-            if (sellerReader.hasNextLine()) {
-                sellerReader.nextLine();
-            }
-            
-            while (sellerReader.hasNextLine()){
-                String row = sellerReader.nextLine();
-                
-            if (row.isBlank()){
-                continue;
-               
-            }    
-            
-            String[] sellerInfo = row.split("`", -1);
-            
-            if(sellerInfo.length == 6){
-               potentialSellers.add(new PotentialSeller(
-               Integer.parseInt(sellerInfo[0]),
-               sellerInfo[1],
-               sellerInfo[2],
-               sellerInfo[3],
-               sellerInfo[4],
-               Integer.parseInt(sellerInfo[5])
-                       ));
-            }
-        }
-            
-        
+
         // Read users.csv: userID`userName`hasPlan`auctionID`price`annualRate`months`extraPayment
         try {
             Scanner userReader = new Scanner(new File("src/main/java/users.csv"));
@@ -716,26 +589,9 @@ public class Prototype {
                 }
             }
 
-        userWriter.close();
-        
-        PrintWriter sellerWriter = new PrintWriter("src/main/java/potentialSellers.csv");
-        
-        sellerWriter.println("potentialSellerID`name`phoneNumber`emailAddress`notes`referringUserID");
-       
-        for(PotentialSeller lead : potentialSellers) {
-            sellerWriter.println(
-            lead.getPotentialSellerID() + "`" +
-            lead.getName() + "`" +
-            lead.getPhoneNumber() + "`" +
-            lead.getEmailAddress() + "`" +
-            lead.getNotes() + "`" +
-            lead.getReferringUserID()
-                    //Where do i put the ;, at the end of the paranthese or referring user id?
-    )
-}
+            userWriter.close();
 
-sellerWriter.close();        
-        System.out.println("Data saved. Goodbye!");
+            System.out.println("Data saved. Goodbye!");
 
         } catch (FileNotFoundException ex) {
             System.out.println("Error saving data!");
