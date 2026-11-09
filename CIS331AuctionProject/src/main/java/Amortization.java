@@ -13,7 +13,7 @@ public class Amortization {
             return;
         }
 
-        // pull everything from the saved plan instead of asking for it
+        // pull everything from the saved plan
         double monthlyRate = plan.getMonthlyRate();
         double payment = plan.getMonthlyPayment();
         double balance = plan.getPrice();
@@ -21,7 +21,7 @@ public class Amortization {
         double totalPaid = 0;
         int month = 0;
 
-        // summary at the top
+        // Print summary
         System.out.printf("\nAMORTIZATION SCHEDULE FOR %s (USER #%d)\n", user.getUserName(), user.getUserID());
         System.out.printf("Amount financed: $%,.2f | Interest: %.2f%% per year | Term: %d months\n",
                 plan.getPrice(), plan.getAnnualRate(), plan.getMonths());
