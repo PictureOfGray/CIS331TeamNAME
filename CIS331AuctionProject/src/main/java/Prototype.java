@@ -44,6 +44,8 @@ public class Prototype {
                     buyerMenu();
                 case 3 ->
                     adminMenu();
+                case 4 ->
+                    potentialSellerMenu();
                 case 0 -> {
                     loop = false;
                     break;
@@ -59,7 +61,7 @@ public class Prototype {
      */
     public static int login() {
         System.out.println("What type of user are you?\n 1 = Seller, 2 = Buyer, 3 = Admin, 4 = Refer Potential Seller. Enter 0 to exit: ");
-        return getValidatedInt(0, 3, "Invalid input!\n Input 0 to exit, 1 for Seller, 2 for Buyer, 3 for Admin, or 4 to Refer Potential Seller: ");
+        return getValidatedInt(0, 4, "Invalid input!\n Input 0 to exit, 1 for Seller, 2 for Buyer, 3 for Admin, or 4 to Refer Potential Seller: ");
     }
 
     /*
@@ -438,7 +440,101 @@ public class Prototype {
         }
     }
 
-    /* Looks at auctions.csv and items.csv and loads it into memory (arrays)
+    //Actual sales lead management(option 4 during login)
+    public static void potentialSellerMenu() {
+        while (true) {
+            System.out.println("\nPOTENTIAL SELLER LEADS");
+            System.out.println("1. Add a potential seller lead");
+            System.out.println("2. View leads for a referring user");
+            System.out.println("3. View all potential seller leads");
+            System.out.println("0. Return to login");
+            int choice = getValidatedInt(0, 3, "Enter 1, 2, 3, or 0: ");
+            switch (choice) {
+                case 1 ->
+                    addPotentialSeller();
+                case 2 ->
+                    viewPotentialSellersForUser();
+                case 3 ->
+                    viewAllPotentialSellers();
+                case 0 -> {
+                    return;
+                }
+            }
+        }
+    }
+
+    public static void addPotentialSeller() {
+        int userIndex = selectUser();
+        if (userIndex == -1) {
+            System.out.println("Lead creation cancelled. Add a user first if needed.");
+            return;
+        }
+
+        int referringUserID = users.get(userIndex).getUserID();
+        userInput.nextLine();
+
+        System.out.println("Please input potential seller name (-1 to cancel): ");
+        String name = userInput.nextLine().trim();
+        if (name.isEmpty() || name.equals("-1")) {
+            System.out.println("Lead creation cancelled.");
+            return;
+        }
+        System.out.println("\nPlease input phone number:");
+        String phone = userInput.nextLine().trim();
+        System.out.println("\nPlease input email address:");
+        String email = userInput.nextLine().trim();
+        System.out.println("\n Please input notes about possible auction items:");
+        String notes = userInput.nextLine().trim();
+
+        int newID = 1; // get the latest id for Potential Sellers
+        for (PotentialSeller lead : potentialSellers) {
+            if (lead.getPotentialSellerID() >= newID) {
+                newID = lead.getPotentialSellerID() + 1;
+            }
+        }
+
+        // all these replaces are so our saving function doesn't break
+        potentialSellers.add(new PotentialSeller(newID,
+                name.replace("`", "'"), phone.replace("`", "'"),
+                email.replace("`", "'"), notes.replace("`", "'"), referringUserID));
+        System.out.println("Lead #" + newID + " saved successfully!");
+    }
+
+    public static void viewPotentialSellersForUser() {
+        int userIndex = selectUser();
+        //Exit if no user is selected
+        if (userIndex == -1) {
+            return;
+        }
+        int userID = users.get(userIndex).getUserID();
+        int count = 0;
+
+        for (PotentialSeller lead : potentialSellers) {
+            if (lead.getReferringUserID() == userID) {
+                displayPotentialSellers(lead);
+                count++;
+            }
+        }
+        if (count == 0) {
+            System.out.println("No leads for that user.");
+        }
+    }
+
+    public static void viewAllPotentialSellers() {
+        if (potentialSellers.isEmpty()) {
+            System.out.println("No potential sellers found.");
+            return;
+        }
+
+        System.out.println("ALL POTENTIAL SELLER LEADS");
+
+        for (PotentialSeller lead : potentialSellers) {
+            displayPotentialSellers(lead);
+        }
+    }
+    
+
+    /* Looks at the .csvs and loads it into memory (arrays)
     *  Files are like a CSV, except instead of a comma separating values it's a ` (backtick)
      */
     public static void loadData() {
@@ -521,6 +617,39 @@ public class Prototype {
         } catch (FileNotFoundException ex) {
             System.out.println("users.csv not found. Starting with no users.");
         }
+        
+        
+        // Loading potentialSellers.csv
+        try {
+            Scanner sellerReader = new Scanner(new File("src/main/java/potentialSellers.csv"));
+            //am i pulling the right file?
+            if (sellerReader.hasNextLine()) {
+                sellerReader.nextLine();
+            }
+            
+            while (sellerReader.hasNextLine()){
+                String row = sellerReader.nextLine();
+                
+                if (row.isBlank()){
+                    continue;
+                }    
+
+                String[] sellerInfo = row.split("`");
+            
+                if(sellerInfo.length == 6){
+                   potentialSellers.add(new PotentialSeller(
+                   Integer.parseInt(sellerInfo[0]),
+                   sellerInfo[1],
+                   sellerInfo[2],
+                   sellerInfo[3],
+                   sellerInfo[4],
+                   Integer.parseInt(sellerInfo[5])));
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("potentialSellers.csv not found. Starting with no potential sellers.");
+        }
+
         System.out.println("All data loaded!");
     }
 
@@ -588,8 +717,23 @@ public class Prototype {
                     userWriter.println(user.getUserID() + "`" + user.getUserName() + "`false`-1`0`0`0`0");
                 }
             }
-
             userWriter.close();
+            
+            // this is for saving potentialSellers.csv
+            PrintWriter sellerWriter = new PrintWriter("src/main/java/potentialSellers.csv");
+        
+            sellerWriter.println("potentialSellerID`name`phoneNumber`emailAddress`notes`referringUserID");
+
+            for(PotentialSeller lead : potentialSellers) {
+                sellerWriter.println(
+                lead.getPotentialSellerID() + "`" +
+                lead.getName() + "`" +
+                lead.getPhoneNumber() + "`" +
+                lead.getEmailAddress() + "`" +
+                lead.getNotes() + "`" +
+                lead.getReferringUserID());
+            }
+            sellerWriter.close();
 
             System.out.println("Data saved. Goodbye!");
 
@@ -988,6 +1132,16 @@ public class Prototype {
                     user.getUserID(), user.getUserName(), user.hasPaymentPlan() ? "yes" : "no");
         }
         System.out.println();
+    }
+    
+    // Helper function to display all potential sellers
+    public static void displayPotentialSellers(PotentialSeller lead) {
+        System.out.println("Lead ID: " + lead.getPotentialSellerID());
+        System.out.println("Name: " + lead.getName());
+        System.out.println("Phone: " + lead.getPhoneNumber());
+        System.out.println("Email: " + lead.getEmailAddress());
+        System.out.println("Auction notes: " + lead.getNotes());
+        System.out.println("Referring user ID: " + lead.getReferringUserID());
     }
 
     // Helper function: show users, ask for an ID, return that user's index in the list (or -1 to cancel)
