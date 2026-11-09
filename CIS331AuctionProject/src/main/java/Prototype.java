@@ -76,8 +76,9 @@ public class Prototype {
 
         // this whole workflow is in a while loop so the seller can keep selection actions until done
         while (intent > 0 || intent == -1) {
-            System.out.println("Welcome, Seller! What do you want to do?\n Input 1 to create an item, 2 to edit an existing item, 3 to create an auction. Enter 0 to logout: ");
-            intent = getValidatedInt(0, 3, "Invalid input!\n Enter 1 to create an item, 2 to edit an existing item, 3 to create an auction, or 0 to logout: ");
+            System.out.println("Welcome, Seller! What do you want to do?\n Input 1 to create an item, 2 to edit an existing item, 3 to create an auction. Enter 0 to return to the main menu"
+                    + ": ");
+            intent = getValidatedInt(0, 3, "Invalid input!\n Enter 1 to create an item, 2 to edit an existing item, 3 to create an auction, or 0 to return to main menu: ");
 
             switch (intent) { // process user choice
                 case 1 -> { // create an item
@@ -187,8 +188,7 @@ public class Prototype {
                         System.out.println("Enter closing date (MM-DD-YYYY):");
                         closingDate = userInput.nextLine().trim();
 
-                        if (!openingDate.isEmpty()) {
-
+                        if (!closingDate.isEmpty()) {
                             break;
                         }
                         // if input is blank, print this:
@@ -231,8 +231,8 @@ public class Prototype {
 
         // this whole workflow is in a while loop so the buyer can keep doing buyer things after selecting
         while (intent > 0 || intent == -1) {
-            System.out.println("Welcome, Buyer! What do you want to do?\n Input 1 to browse items, 2 to place a bid on an item, 3 for payment plans & amortization tables. Enter 0 to logout: ");
-            intent = getValidatedInt(0, 3, "Invalid input!\n Enter 1 to browse items, 2 to place a bid, 3 for payment plans, or 0 to logout: ");
+            System.out.println("Welcome, Buyer! What do you want to do?\n Input 1 to browse items, 2 to place a bid on an item, 3 for payment plans & amortization tables. Enter 0 to return to main menu: ");
+            intent = getValidatedInt(0, 3, "Invalid input!\n Enter 1 to browse items, 2 to place a bid, 3 for payment plans, or 0 to return to main menu: ");
 
             switch (intent) { // handles which action the buyer inputs
                 case 1 -> { // browse items
@@ -250,7 +250,7 @@ public class Prototype {
                             System.out.printf("--ITEM: %s\n", item.getItemName());
                             System.out.printf("--DESCRIPTION: %s\n", item.getItemDescr());
                             System.out.printf("--CLOSING DATE: %s\n", auction.getClosingDate());
-                            System.out.printf("--CURRENT HIGHEST BID: %.2f\n", auction.getCurrentBid());
+                            System.out.printf("--CURRENT HIGHEST BID: $%,.2f\n", auction.getCurrentBid());
                             System.out.println();
                         }
                     }
@@ -339,8 +339,8 @@ public class Prototype {
 
         // this whole workflow is in a while loop so the admin can keep doing admin things after an action
         while (intent > 0 || intent == -1) {
-            System.out.println("Welcome, Admin! What do you want to do?\n Input 1 to close a sale early, 2 to edit an existing item, 3 to run reports, 4 for user payment plans & amortization tables. Enter 0 to logout: ");
-            intent = getValidatedInt(0, 4, "Invalid input!\n Enter 1 to close a sale early, 2 to edit existing items, 3 to run reports, 4 for payment plans, or 0 to logout: ");
+            System.out.println("Welcome, Admin! What do you want to do?\n Input 1 to close a sale early, 2 to edit an existing item, 3 to run reports, 4 for user payment plans & amortization tables. Enter 0 to return to main menu: ");
+            intent = getValidatedInt(0, 4, "Invalid input!\n Enter 1 to close a sale early, 2 to edit existing items, 3 to run reports, 4 for payment plans, or 0 to return to main menu: ");
 
             switch (intent) { // looks at input and runs respective action
                 case 1 -> { // close a sale early
@@ -356,7 +356,7 @@ public class Prototype {
                             System.out.printf("--ITEM: %s\n", item.getItemName());
                             System.out.printf("--DESCRIPTION: %s\n", item.getItemDescr());
                             System.out.printf("--CLOSING DATE: %s\n", auction.getClosingDate());
-                            System.out.printf("--CURRENT HIGHEST BID: %.2f\n", auction.getCurrentBid());
+                            System.out.printf("--CURRENT HIGHEST BID: $%,.2f\n", auction.getCurrentBid());
                             System.out.println();
                         }
                     }
@@ -532,14 +532,15 @@ public class Prototype {
             displayPotentialSellers(lead);
         }
     }
-    
+
 
     /* Looks at the .csvs and loads it into memory (arrays)
     *  Files are like a CSV, except instead of a comma separating values it's a ` (backtick)
      */
     public static void loadData() {
+        boolean allFilesLoaded = true;
         try { // this is in a try statement in case there's an error
-            Scanner itemsReader = new Scanner(new File("src/main/java/items.csv"));
+            Scanner itemsReader = new Scanner(new File("items.csv"));
             if (itemsReader.hasNextLine()) {
                 itemsReader.nextLine(); // eat header row
             }
@@ -557,13 +558,14 @@ public class Prototype {
                 nextItemSlot++;
             }
         } catch (FileNotFoundException ex) {
+            allFilesLoaded = false;
             System.out.println("items.csv not found. Starting with no items.");
             nextItemSlot = 0;
         }
 
         // Read the auctions.cs file and put it in a global array.
         try {
-            Scanner auctionReader = new Scanner(new File("src/main/java/auctions.csv"));
+            Scanner auctionReader = new Scanner(new File("auctions.csv"));
             if (auctionReader.hasNextLine()) {
                 auctionReader.nextLine(); // eat header row
             }
@@ -584,13 +586,14 @@ public class Prototype {
                 nextAuctionSlot++;
             }
         } catch (FileNotFoundException ex) {
+            allFilesLoaded = false;
             System.out.println("auctions.csv not found. Starting with no auctions.");
             nextAuctionSlot = 0;
         }
 
         // Read users.csv: userID`userName`hasPlan`auctionID`price`annualRate`months`extraPayment
         try {
-            Scanner userReader = new Scanner(new File("src/main/java/users.csv"));
+            Scanner userReader = new Scanner(new File("users.csv"));
             if (userReader.hasNextLine()) {
                 userReader.nextLine(); // eat header row
             }
@@ -615,42 +618,45 @@ public class Prototype {
                 users.add(new User(Integer.parseInt(userInfo[0]), userInfo[1], plan));
             }
         } catch (FileNotFoundException ex) {
+            allFilesLoaded = false;
             System.out.println("users.csv not found. Starting with no users.");
         }
-        
-        
+
         // Loading potentialSellers.csv
         try {
-            Scanner sellerReader = new Scanner(new File("src/main/java/potentialSellers.csv"));
+            Scanner sellerReader = new Scanner(new File("potentialSellers.csv"));
             //am i pulling the right file?
             if (sellerReader.hasNextLine()) {
                 sellerReader.nextLine();
             }
-            
-            while (sellerReader.hasNextLine()){
+
+            while (sellerReader.hasNextLine()) {
                 String row = sellerReader.nextLine();
-                
-                if (row.isBlank()){
+
+                if (row.isBlank()) {
                     continue;
-                }    
+                }
 
                 String[] sellerInfo = row.split("`");
-            
-                if(sellerInfo.length == 6){
-                   potentialSellers.add(new PotentialSeller(
-                   Integer.parseInt(sellerInfo[0]),
-                   sellerInfo[1],
-                   sellerInfo[2],
-                   sellerInfo[3],
-                   sellerInfo[4],
-                   Integer.parseInt(sellerInfo[5])));
+
+                if (sellerInfo.length == 6) {
+                    potentialSellers.add(new PotentialSeller(
+                            Integer.parseInt(sellerInfo[0]),
+                            sellerInfo[1],
+                            sellerInfo[2],
+                            sellerInfo[3],
+                            sellerInfo[4],
+                            Integer.parseInt(sellerInfo[5])));
                 }
             }
         } catch (Exception e) {
+            allFilesLoaded = false;
             System.out.println("potentialSellers.csv not found. Starting with no potential sellers.");
         }
 
-        System.out.println("All data loaded!");
+        if (allFilesLoaded) {
+            System.out.println("All data loaded!");
+        }
     }
 
     /* Overwrites both auctions.csv and items.csv with everything currently in memory
@@ -659,7 +665,7 @@ public class Prototype {
     public static void saveData() {
         try { // this is in a try in case there's a file exception
             // This is for saving items.csv
-            PrintWriter itemWriter = new PrintWriter("src/main/java/items.csv");
+            PrintWriter itemWriter = new PrintWriter("items.csv");
 
             // Header row because we're still pretending to have CSVs
             itemWriter.println("itemID`itemName`itemDescr");
@@ -677,7 +683,7 @@ public class Prototype {
             itemWriter.close();
 
             // This is for saving auctions.csv
-            PrintWriter auctionWriter = new PrintWriter("src/main/java/auctions.csv");
+            PrintWriter auctionWriter = new PrintWriter("auctions.csv");
 
             // Header row
             auctionWriter.println("auctionID`itemID`currentBid`winningBuyerID`dateOpened`closingDate`open");
@@ -699,7 +705,7 @@ public class Prototype {
             auctionWriter.close();
 
             // This is for saving users.csv (users + their saved payment plans)
-            PrintWriter userWriter = new PrintWriter("src/main/java/users.csv");
+            PrintWriter userWriter = new PrintWriter("users.csv");
             userWriter.println("userID`userName`hasPlan`auctionID`price`annualRate`months`extraPayment");
 
             for (User user : users) {
@@ -718,20 +724,20 @@ public class Prototype {
                 }
             }
             userWriter.close();
-            
+
             // this is for saving potentialSellers.csv
-            PrintWriter sellerWriter = new PrintWriter("src/main/java/potentialSellers.csv");
-        
+            PrintWriter sellerWriter = new PrintWriter("potentialSellers.csv");
+
             sellerWriter.println("potentialSellerID`name`phoneNumber`emailAddress`notes`referringUserID");
 
-            for(PotentialSeller lead : potentialSellers) {
+            for (PotentialSeller lead : potentialSellers) {
                 sellerWriter.println(
-                lead.getPotentialSellerID() + "`" +
-                lead.getName() + "`" +
-                lead.getPhoneNumber() + "`" +
-                lead.getEmailAddress() + "`" +
-                lead.getNotes() + "`" +
-                lead.getReferringUserID());
+                        lead.getPotentialSellerID() + "`"
+                        + lead.getName() + "`"
+                        + lead.getPhoneNumber() + "`"
+                        + lead.getEmailAddress() + "`"
+                        + lead.getNotes() + "`"
+                        + lead.getReferringUserID());
             }
             sellerWriter.close();
 
@@ -767,7 +773,7 @@ public class Prototype {
                         System.out.printf("--ITEM: %s\n", item.getItemName());
                         System.out.printf("--DESCRIPTION: %s\n", item.getItemDescr());
                         System.out.printf("--CLOSING DATE: %s\n", auction.getClosingDate());
-                        System.out.printf("--CURRENT HIGHEST BID: %.2f\n", auction.getCurrentBid());
+                        System.out.printf("--CURRENT HIGHEST BID: $%,.2f\n", auction.getCurrentBid());
                         System.out.println();
                     }
                 }
@@ -791,7 +797,7 @@ public class Prototype {
                     System.out.println("Please enter a valid non-negative price:");
                 }
 
-                System.out.printf("\nITEMS FOR SALE ($%.2f AND UP)\n", minimumPrice);
+                System.out.printf("\nITEMS FOR SALE ($%,.2f AND UP)\n", minimumPrice);
 
                 for (int i = 0; i < nextAuctionSlot; i++) {
                     if (auctions.get(i) != null && auctions.get(i).getClosedStatus()) {
@@ -894,7 +900,7 @@ public class Prototype {
         System.out.println("What is the description of your item? ");
         String itemDescr = userInput.nextLine();
 
-        items.add(itemIndex, new Item(
+        items.set(itemIndex, new Item(
                 itemIndex,
                 itemName,
                 itemDescr
@@ -1133,7 +1139,7 @@ public class Prototype {
         }
         System.out.println();
     }
-    
+
     // Helper function to display all potential sellers
     public static void displayPotentialSellers(PotentialSeller lead) {
         System.out.println("Lead ID: " + lead.getPotentialSellerID());
