@@ -390,6 +390,7 @@ public class Prototype {
                     }
 
                     auctions.get(selectedAuction).setOpen(false); // change open field to false, i.e., closed
+                    closeAuction (auctions.get(selectedAuction)); // close it and assign the winner.
 
                     System.out.printf("Auction #%d has been closed!\n", selectedAuction);
                 }
@@ -1049,11 +1050,15 @@ public class Prototype {
                 return false;
             }
         }
-
-        System.out.println(
+        return finishPaymentPlan(user,auctionID, price);
+}
+      // ask for rate, term, and extra payment then saves the plan.
+        public static boolean finishPaymentPlan(User user, int auctionID, double price){
+              System.out.println(
                 "Enter yearly interest rate (%), or -1 to cancel:"
         );
-
+      
+              
         double rate = getValidatedDouble(
                 0, "Interest rate must be 0 or more:"
         );
@@ -1215,5 +1220,42 @@ public class Prototype {
             System.out.println(errorMessage);
         }
     }
-
+    
+    // find a user's index in the list by their ID (-1 if not found)
+    public static int findUserByID (int userID){
+        for (int i = 0; i < users.size(); i++){
+            if (users.get(i).getUserID()== userID){
+                return i;
+            }
+        }
+        return -1;
+    }
+    
+    // close a auction and assigns the winner
+    public static void closeAuction(Auction auction){
+        auction.setOpen(false);
+        System.out.printf("Auction #%d has been closed!\n", auction.getAuctionID());
+       
+        int winnerIndex = findUserByID(auction.getWinningBuyerID());
+        if (winnerIndex == -1){ // means no one bid
+            System.out.println("No bids were placed, no winner");
+            return;
+        }
+        User winner = users.get(winnerIndex);
+        Item item = items.get(auction.getItemID());
+        System.out.println("WINNER: "+ winner.getUserName()
+                + "(User #" + winner.getUserID() + ")" 
+                + item.getItemName() + "' for $" 
+                + auction.getCurrentBid() + "!");
+        // offer to tie the winner's payment plan to this auction
+        if (winner.hasPaymentPlan()) {
+            System.out.println("Note: this will replace the winner's existing saved payment plan.");
+        }
+        System.out.println("Set up a payment plan for the winner now? 1 = yes, 2 = no: ");
+        int choice = getValidatedInt(1,2,"Enter 1 or 2:");
+        if (choice == 1){
+            System.out.println("Amount to finance: $" + auction.getCurrentBid());
+            finishPaymentPlan(winner, auction.getAuctionID(),auction.getCurrentBid());
+        }
+    }
 }
