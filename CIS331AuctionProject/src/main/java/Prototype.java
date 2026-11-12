@@ -15,7 +15,7 @@ public class Prototype {
     public static int intent = -1;
 
     // Declare class variables for use throughout the program
-    public static ArrayList<Item> items = new ArrayList<>();
+    public static ArrayList<Item> items = new ArrayList<>(); 
     public static int nextItemSlot = 0;
 
     public static ArrayList<Auction> auctions = new ArrayList<>();
@@ -882,13 +882,8 @@ public class Prototype {
 
     }
 
-    // Helper function to add items for Seller
+        // Helper function to add items for Seller
     public static void addItem(int itemIndex) {
-        // if we're using the next blank element in the items array, advance by one
-        if (itemIndex == nextItemSlot) {
-            nextItemSlot++;
-        }
-
         userInput.nextLine(); // eats any newlines before prompting
 
         System.out.println("What is the name of your item? Or enter -1 to cancel ");
@@ -901,11 +896,13 @@ public class Prototype {
         System.out.println("What is the description of your item? ");
         String itemDescr = userInput.nextLine();
 
-        items.set(itemIndex, new Item(
-                itemIndex,
-                itemName,
-                itemDescr
-        ));
+        Item newItem = new Item(itemIndex, itemName, itemDescr);
+        if (itemIndex == nextItemSlot) { // brand-new item: add it to the end of the list
+            items.add(newItem);
+            nextItemSlot++;
+        } else { // existing item: replace it
+            items.set(itemIndex, newItem);
+        }
     }
 
     // Helper function used to display all items
