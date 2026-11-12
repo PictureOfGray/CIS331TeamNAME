@@ -1,2 +1,4 @@
 userID`userName`hasPlan`auctionID`price`annualRate`months`extraPayment
 0`Laura`true`-1`1200.0`6.0`24`50.0
+1`Tyler`false`-1`0`0`0`0
+2`Colin`false`-1`0`0`0`0
